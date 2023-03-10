@@ -1,0 +1,37 @@
+[
+  {
+    "id": 1,
+    "name":"less_than_750",
+    "title": "ít hơn 750000 VNĐ",
+    "value_1": 750000,
+    "value_2": null
+  },
+  {
+    "id": 2,
+    "name":"between_fr_750_to_1250",
+    "title": "từ 750000 VNĐ tới 1250000 VNĐ",
+    "value_1": 750000,
+    "value_2": 1250000
+  },
+  {
+    "id": 3,
+    "name":"between_fr_1250_to_2000",
+    "title": "từ 1250000 VNĐ tới 2000000 VNĐ",
+    "value_1": 1250000,
+    "value_2": 2000000
+  },
+  {
+    "id": 4,
+    "name":"between_fr_2000_to_3000",
+    "title": "từ 2000000 VNĐ tới 3000000 VNĐ",
+    "value_1": 2000000,
+    "value_2": 3000000
+  },
+  {
+    "id": 5,
+    "name":"greater_than_3000",
+    "title": "lớn hơn 3000000",
+    "value_1": 3000000,
+    "value_2": null
+  }
+]

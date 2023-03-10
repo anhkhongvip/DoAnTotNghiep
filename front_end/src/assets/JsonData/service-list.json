@@ -1,0 +1,47 @@
+[
+  {
+    "id": 1,
+    "title": "Sân thể thao ngoài trời",
+    "icon": "fa-light fa-baseball"
+  },
+  {
+    "id": 2,
+    "title": "Bếp",
+    "icon": "fa-light fa-grill-hot"
+  },
+  {
+    "id": 3,
+    "title": "Bể bơi",
+    "icon": "fa-light fa-water-ladder"
+  },
+  {
+    "id": 4,
+    "title": "Wifi miễn phí",
+    "icon": "fa-light fa-wifi"
+  },
+  {
+    "id": 5,
+    "title": "Chỗ để xe miễn phí",
+    "icon": "fa-light fa-circle-parking"
+  },
+  {
+    "id": 6,
+    "title": "Bữa sáng",
+    "icon": "fa-light fa-mug-saucer"
+  },
+  {
+    "id": 7,
+    "title": "Thể thao",
+    "icon": "fa-light fa-bicycle"
+  },
+  {
+    "id": 8,
+    "title": "Spa",
+    "icon": "fa-light fa-spa"
+  },
+  {
+    "id": 9,
+    "title": "Ưu đãi đặc biệt",
+    "icon": "fa-light fa-gift"
+  }
+]
