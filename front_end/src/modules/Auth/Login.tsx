@@ -1,5 +1,5 @@
 import React, { Fragment } from "react";
-import { useFormik, Form, Field, ErrorMessage, Formik, useField } from "formik";
+import { Form, Field, ErrorMessage, Formik } from "formik";
 import { Link } from "react-router-dom";
 import { Input, InputPasswordToggle } from "../../components/input";
 import * as yup from "yup";
@@ -183,7 +183,7 @@ const Login = () => {
                   type="submit"
                   isLoading={isSubmitting}
                   disabled={isSubmitting}
-                  className="btn__submit"
+                  className="btn__custom btn__submit"
                   width="100%"
                   height="4.8rem"
                 >

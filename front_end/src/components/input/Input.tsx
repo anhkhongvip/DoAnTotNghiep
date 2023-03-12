@@ -46,7 +46,6 @@ type Props = {
   id?: string;
   className?: string;
   placeholder?: string;
-  defaultValue?: string
 };
 
 const Input = ({

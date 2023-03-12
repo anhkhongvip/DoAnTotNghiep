@@ -38,11 +38,20 @@ const ModalStyles = styled.div`
     .btn-close-modal {
       position: absolute;
       top: -3%;
-      right: -5%;
+      right: 0%;
+      transform: translateX(50%);
       background-color: #ffff;
       width: 4rem;
       height: 4rem;
       border-radius: 2rem;
+    }
+
+    &-avatar {
+      width: 72rem;
+      height: 40rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
   }
 `;

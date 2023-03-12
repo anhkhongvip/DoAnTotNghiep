@@ -4,6 +4,7 @@ import bodyParser from "body-parser";
 import { connectDB } from "./src/configs/data-source";
 import cors from "cors";
 import route from "./src/routes";
+import { connectUploadCloud } from "./src/configs/uploadCloud";
 
 const PORT = 8080;
 const app = express();
@@ -13,6 +14,7 @@ app.use(bodyParser.json());
 dotenv.config();
 
 connectDB();
+connectUploadCloud();
 route(app);
 app.listen(PORT, () => {
   console.log("App running on port: " + PORT);

@@ -33,6 +33,9 @@ export class Account {
   @Column({ type: "varchar", nullable: true })
   public address: string | null;
 
+  @Column({ type: "varchar", nullable: true })
+  public phone_number: string | null;
+
   @Column({ type: "timestamp", default: () => 'CURRENT_TIMESTAMP'}) // Recommended
   created_at: string;
 

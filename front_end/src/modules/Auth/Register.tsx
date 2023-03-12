@@ -162,7 +162,7 @@ const Register = () => {
                     type="submit"
                     isLoading={isSubmitting}
                     disabled={isSubmitting}
-                    className="btn__submit"
+                    className="btn__custom btn__submit"
                     width="100%"
                     height="4.8rem"
                   >

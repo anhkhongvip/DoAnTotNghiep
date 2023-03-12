@@ -10,7 +10,6 @@ type Props = {
   className?: string;
   placeholder?: string;
   icon_position?: string;
-  defaultValue?: string;
 };
 const InputIcon = ({ children, ...props }: Props) => {
   return (

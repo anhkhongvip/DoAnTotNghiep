@@ -7,6 +7,17 @@ import HomeHeaderRouter from "./HomeHeaderRouter";
 import ReactQuill, { Quill } from "react-quill";
 import { useAuthentication } from "../../contexts/authContext";
 import { AuthContextType } from "../../@types/auth";
+import { Radio } from "../../components/radio";
+import { ModalContextType } from "../../@types/modal";
+import { useModal } from "../../contexts/modalContext";
+import { Modal } from "../../components/modal";
+import ImageUploadAvatar from "../../components/image/ImageUploadAvatar";
+import { Button } from "../../components/button";
+import {
+  deleteImageAsync,
+  uploadImageAsync,
+} from "../../services/image.service";
+import { useAppDispatch } from "../../app/hooks";
 const HomeProfileStyles = styled.div`
   .profile {
     display: flex;
@@ -91,7 +102,6 @@ const HomeProfileStyles = styled.div`
     }
   }
 `;
-const initialValues = {};
 const HomeProfile = () => {
   const modules = useMemo(
     () => ({
@@ -109,6 +119,67 @@ const HomeProfile = () => {
 
   const [content, setContent] = useState("");
   const { account } = useAuthentication() as AuthContextType;
+  const initialValues = {
+    username: account.username,
+    gender: "",
+    email: "",
+    phone_number: "",
+    address: "",
+    description: "",
+  };
+  const { modalOpen, setModalOpen } = useModal() as ModalContextType;
+  const openModal = (event: React.MouseEvent<HTMLElement>) => {
+    event.preventDefault();
+    const target = event.target as HTMLButtonElement;
+    const {
+      dataset: { modal },
+    } = target;
+    if (modal) {
+      setModalOpen(modal);
+    }
+  };
+  const closeModal = (event: React.MouseEvent<Element, MouseEvent>): void => {
+    event.stopPropagation();
+    setModalOpen("");
+    setImgUrl("");
+    setPublicId("");
+    (document.getElementById("avatar") as HTMLInputElement).value = "";
+  };
+
+  const [imageUrl, setImgUrl] = useState<string>("");
+  const [publicId, setPublicId] = useState<string>("");
+  //const [isLoading, setIsLoading] = useState<boolean>(false);
+  const dispatch = useAppDispatch();
+  const uploadImage = async (event: React.ChangeEvent) => {
+    try {
+      let files = (event.target as HTMLInputElement).files!;
+      const formData = new FormData();
+      formData.append("image", files[0]);
+      let {
+        payload: { data },
+      }: any = await dispatch(uploadImageAsync(formData));
+      if (data) {
+        setImgUrl(data.secure_url);
+        setPublicId(data.public_id);
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
+  const deleteImage = async () => {
+    try {
+      let {
+        payload: { data },
+      }: any = await dispatch(deleteImageAsync(publicId));
+      if (data) {
+        setImgUrl("");
+        setPublicId("");
+        (document.getElementById("avatar") as HTMLInputElement).value = "";
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
   return (
     <HomeProfileStyles>
       <div className="container">
@@ -119,27 +190,16 @@ const HomeProfile = () => {
           <div className="profile-small">
             <div className="profile-small__avatar">
               <div className="profile-small__image">
-                <img
-                  src={`${account.avatar}`}
-                  alt="profile-src-img"
-                />
+                <img src={account.avatar} alt="profile-src-img" />
               </div>
-              <label htmlFor="upload-avatar" className="profile-small__icon">
-                <svg
-                  width="17"
-                  height="17"
-                  viewBox="0 0 17 17"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    fillRule="evenodd"
-                    clipRule="evenodd"
-                    d="M0.361882 13.0856L0.944688 10.4629C1.07741 9.86566 1.3777 9.31864 1.81033 8.88601L9.73065 0.96569C10.987 -0.290645 13.0239 -0.290648 14.2802 0.965688L15.3605 2.04593C16.6168 3.30227 16.6168 5.33919 15.3605 6.59552L7.44017 14.5158C7.00754 14.9485 6.46051 15.2488 5.86324 15.3815L3.24062 15.9643C1.51669 16.3474 -0.0212144 14.8095 0.361882 13.0856ZM2.51491 10.8119L1.9321 13.4345C1.8044 14.0091 2.31704 14.5218 2.89168 14.3941L5.51431 13.8113C5.80151 13.7474 6.06548 13.6061 6.27769 13.403L2.92319 10.0485C2.72005 10.2607 2.57873 10.5247 2.51491 10.8119ZM4.06032 8.91082L7.41535 12.2659L11.9078 7.77342L8.55275 4.41838L4.06032 8.91082ZM14.2231 5.45812L13.0452 6.63602L9.69015 3.28098L10.868 2.10309C11.4962 1.47492 12.5147 1.47492 13.1428 2.10309L14.2231 3.18333C14.8513 3.81149 14.8513 4.82996 14.2231 5.45812Z"
-                    fill="#777E91"
-                  />
-                </svg>
-              </label>
+              <button
+                className="profile-small__icon"
+                type="button"
+                onClick={openModal}
+                data-modal="modal-upload"
+              >
+                <i className="fa-solid fa-camera" data-modal="modal-upload"></i>
+              </button>
             </div>
             <h2 className="profile-small__name">{account.username}</h2>
           </div>
@@ -187,7 +247,6 @@ const HomeProfile = () => {
                       className="form-control"
                       placeholder="Nhập tên của bạn"
                       icon_position="before"
-                      //defaultValue={account?.username || ''}
                     >
                       <i className="fa-light fa-user text-gray-400"></i>
                     </InputIcon>
@@ -195,8 +254,8 @@ const HomeProfile = () => {
                   <div className="form-group ml-3">
                     <InputIcon
                       type="text"
-                      name="phone"
-                      id="phone"
+                      name="phone_number"
+                      id="phone_number"
                       className="form-control"
                       placeholder="Nhập số điện thoại của bạn"
                       icon_position="before"
@@ -204,36 +263,20 @@ const HomeProfile = () => {
                       <i className="fa-light fa-phone text-gray-400"></i>
                     </InputIcon>
                   </div>
-                  <div className="form-group">
-                    <InputIcon
-                      type="text"
-                      name="gender"
-                      id="gender"
-                      className="form-control"
-                      placeholder="Nhập giới tính của bạn"
-                      icon_position="before"
-                    >
-                      <svg
-                        width="20"
-                        height="21"
-                        viewBox="0 0 20 21"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M7.5405 20.9161C5.60693 20.9161 3.67753 20.1785 2.20652 18.7075C-0.735506 15.7655 -0.735506 10.9774 2.20652 8.03538C5.14855 5.09335 9.93663 5.09335 12.8787 8.03538C15.8207 10.9774 15.8207 15.7655 12.8787 18.7075C11.4035 20.1785 9.46991 20.9161 7.5405 20.9161ZM7.5405 7.36863C6.00282 7.36863 4.46513 7.9562 3.29415 9.12301C0.9522 11.465 0.9522 15.2738 3.29415 17.6157C5.63611 19.9577 9.4449 19.9577 11.7869 17.6157C14.1288 15.2738 14.1288 11.465 11.7869 9.12301C10.6159 7.9562 9.07819 7.36863 7.5405 7.36863Z"
-                          fill="#B5B5BE"
-                        />
-                        <path
-                          d="M12.3325 9.35284C12.1366 9.35284 11.9407 9.27783 11.7866 9.12781C11.4865 8.82777 11.4865 8.34021 11.7866 8.04018L18.6874 1.13933C18.9874 0.839297 19.475 0.839297 19.775 1.13933C20.0751 1.43937 20.0751 1.92693 19.775 2.22697L12.8784 9.12781C12.7242 9.27783 12.5283 9.35284 12.3325 9.35284Z"
-                          fill="#B5B5BE"
-                        />
-                        <path
-                          d="M19.0199 8.14334C19.0116 8.14334 18.9991 8.14334 18.9907 8.14334C18.5657 8.12667 18.2365 7.77246 18.249 7.34741L18.4282 2.48432L13.5651 2.65934C13.1275 2.68017 12.7817 2.34263 12.7692 1.91758C12.7525 1.49253 13.0859 1.13415 13.5109 1.12165L19.2033 0.913291C19.4158 0.900789 19.6242 0.9883 19.7742 1.13832C19.9242 1.28834 20.0075 1.4967 19.9992 1.70922L19.7908 7.39742C19.7742 7.8183 19.4325 8.14334 19.0199 8.14334Z"
-                          fill="#B5B5BE"
-                        />
-                      </svg>
-                    </InputIcon>
+                  <div className="form-group" style={{ display: "flex" }}>
+                    <div className="flex items-center">
+                      <div className="title-gender ml-5">Giới tính : </div>
+                      <div className="ml-20">
+                        <Radio id="gender-male" name="gender" value="1">
+                          Nam
+                        </Radio>
+                      </div>
+                      <div className="ml-40">
+                        <Radio id="gender-female" name="gender" value="2">
+                          Nữ
+                        </Radio>
+                      </div>
+                    </div>
                   </div>
                   <div className="form-group ml-3">
                     <InputIcon
@@ -312,6 +355,40 @@ const HomeProfile = () => {
           </div>
         </div>
       </div>
+      <Modal
+        closeFn={closeModal}
+        toggle={modalOpen === "modal-upload"}
+        title="Cập nhật ảnh đại diện"
+      >
+        <div className="modal-avatar">
+          <ImageUploadAvatar
+            image={imageUrl}
+            imageOrigin={account.avatar}
+            uploadImage={uploadImage}
+            deleteImage={deleteImage}
+          ></ImageUploadAvatar>
+        </div>
+        <div className="modal-tool flex justify-end">
+          <Button
+            type="button"
+            className="btn btn__custom  btn__cancel mr-5"
+            fontSize="1.6rem"
+            height="3.6rem"
+            color="#316bff"
+          >
+            Hủy
+          </Button>
+          <Button
+            type="button"
+            className="btn btn__custom btn__submit"
+            fontSize="1.6rem"
+            height="3.6rem"
+            width="10.5rem"
+          >
+            Lưu
+          </Button>
+        </div>
+      </Modal>
     </HomeProfileStyles>
   );
 };

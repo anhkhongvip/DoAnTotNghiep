@@ -2,6 +2,7 @@ import { useField } from "formik";
 import React from "react";
 import styled from "styled-components";
 const RadioStyles = styled.div`
+  display: inline-block;
   .radio {
     &__input {
       display: none;
@@ -44,7 +45,9 @@ const Radio = ({ children, ...props }: Props) => {
     <RadioStyles>
       <div className="radio">
         <input type="radio" className="radio__input" {...props} {...field} />
-        <label htmlFor={props.id} className="radio__label">{children}</label>
+        <label htmlFor={props.id} className="radio__label">
+          {children}
+        </label>
       </div>
     </RadioStyles>
   );
