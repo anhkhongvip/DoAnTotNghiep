@@ -2,11 +2,11 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
 const getAccountAsync = createAsyncThunk(
-  "user/getUserAsync",
+  "account/getAccountAsync",
   async (token: string) => {
     try {
       const res: any = await axios.get(
-        `${process.env.REACT_APP_URL}/api/account`,
+        `${process.env.REACT_APP_URL}/api/accounts`,
         {
           headers: {
             authorization: token,
@@ -20,4 +20,25 @@ const getAccountAsync = createAsyncThunk(
   }
 );
 
-export { getAccountAsync };
+const updateAccountAsync = createAsyncThunk(
+  "account/updateAccountAsync",
+  async (data: any) => {
+    try {
+      const { token, ...newData } = data;
+      const res: any = await axios.put(
+        `${process.env.REACT_APP_URL}/api/accounts`,
+        newData,
+        {
+          headers: {
+            authorization: token,
+          },
+        }
+      );
+      return res.data;
+    } catch (error: any) {
+      return error.response.data;
+    }
+  }
+);
+
+export { getAccountAsync, updateAccountAsync };

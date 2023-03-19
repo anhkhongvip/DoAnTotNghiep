@@ -17,7 +17,12 @@ import {
   deleteImageAsync,
   uploadImageAsync,
 } from "../../services/image.service";
-import { useAppDispatch } from "../../app/hooks";
+import { useAppDispatch, useAppSelector } from "../../app/hooks";
+import { BouceLoading } from "../../components/loading";
+import { selectImage } from "../../features/image/imageSlice";
+import { selectAccount, setAccount } from "../../features/account/accountSlice";
+import { updateAccountAsync } from "../../services/account.service";
+import Swal from "sweetalert2";
 const HomeProfileStyles = styled.div`
   .profile {
     display: flex;
@@ -117,16 +122,24 @@ const HomeProfile = () => {
     []
   );
 
-  const [content, setContent] = useState("");
-  const { account } = useAuthentication() as AuthContextType;
+  
+  const [imageUrl, setImgUrl] = useState<string>("");
+  const [publicId, setPublicId] = useState<string>("");
+  const [statusEdit, setStatusEdit] = useState<boolean>(false);
+  let token = localStorage.getItem("token");
+  const dispatch = useAppDispatch();
+  const imageSelector = useAppSelector(selectImage);
+  const accountSelector = useAppSelector(selectAccount);
+  const [content, setContent] = useState<string>(accountSelector.account.description);
+  const [newGender, setNewGender] = useState<number>(accountSelector.account.gender)
   const initialValues = {
-    username: account.username,
-    gender: "",
-    email: "",
-    phone_number: "",
-    address: "",
-    description: "",
+    username: accountSelector.account?.username || "",
+    gender: accountSelector.account?.gender || "",
+    email: accountSelector.account?.email || "",
+    phone_number: accountSelector.account?.phone_number || "",
+    address: accountSelector.account?.address || "",
   };
+
   const { modalOpen, setModalOpen } = useModal() as ModalContextType;
   const openModal = (event: React.MouseEvent<HTMLElement>) => {
     event.preventDefault();
@@ -138,18 +151,22 @@ const HomeProfile = () => {
       setModalOpen(modal);
     }
   };
-  const closeModal = (event: React.MouseEvent<Element, MouseEvent>): void => {
+  const closeModal = async (event: React.MouseEvent<Element, MouseEvent>) => {
     event.stopPropagation();
+    if (publicId) {
+      let {
+        payload: { data },
+      }: any = await dispatch(deleteImageAsync(publicId));
+      if (data) {
+        setImgUrl("");
+        setPublicId("");
+
+        (document.getElementById("avatar") as HTMLInputElement).value = "";
+      }
+    }
     setModalOpen("");
-    setImgUrl("");
-    setPublicId("");
-    (document.getElementById("avatar") as HTMLInputElement).value = "";
   };
 
-  const [imageUrl, setImgUrl] = useState<string>("");
-  const [publicId, setPublicId] = useState<string>("");
-  //const [isLoading, setIsLoading] = useState<boolean>(false);
-  const dispatch = useAppDispatch();
   const uploadImage = async (event: React.ChangeEvent) => {
     try {
       let files = (event.target as HTMLInputElement).files!;
@@ -166,7 +183,7 @@ const HomeProfile = () => {
       console.log(err);
     }
   };
-  const deleteImage = async () => {
+  const deleteImage = async (event: React.MouseEvent) => {
     try {
       let {
         payload: { data },
@@ -180,6 +197,31 @@ const HomeProfile = () => {
       console.log(err);
     }
   };
+  const handleSaveImage = async () => {
+    let {
+      payload: { data },
+    } = await dispatch(updateAccountAsync({ avatar: imageUrl, token }));
+    if (data) {
+      Swal.fire({
+        position: "center",
+        icon: data.status,
+        title: "Cập nhật ảnh đại diện thành công",
+        showConfirmButton: false,
+        timer: 2000,
+      }).then((result) => {
+        if (data.status === "success") {
+          setModalOpen("");
+          dispatch(
+            setAccount({ ...accountSelector.account, avatar: imageUrl })
+          );
+          setImgUrl("");
+          setPublicId("");
+          (document.getElementById("avatar") as HTMLInputElement).value = "";
+        }
+      });
+    }
+  };
+
   return (
     <HomeProfileStyles>
       <div className="container">
@@ -190,7 +232,10 @@ const HomeProfile = () => {
           <div className="profile-small">
             <div className="profile-small__avatar">
               <div className="profile-small__image">
-                <img src={account.avatar} alt="profile-src-img" />
+                <img
+                  src={accountSelector.account?.avatar}
+                  alt="profile-src-img"
+                />
               </div>
               <button
                 className="profile-small__icon"
@@ -201,43 +246,65 @@ const HomeProfile = () => {
                 <i className="fa-solid fa-camera" data-modal="modal-upload"></i>
               </button>
             </div>
-            <h2 className="profile-small__name">{account.username}</h2>
+            <h2 className="profile-small__name">
+              {accountSelector.account?.username}
+            </h2>
           </div>
           <div className="profile-big">
             <h2 className="profile-big__title">Trang cá nhân</h2>
             <Formik
               initialValues={initialValues}
-              onSubmit={(values, actions) => {
-                console.log({ values, actions });
+              onSubmit={async (values, actions) => {
+                console.log(values);
+                let {
+                  payload: { data },
+                } = await dispatch(
+                  updateAccountAsync({ description: content, ...values, token})
+                );
+                if (data) {
+                  Swal.fire({
+                    position: "center",
+                    icon: data.status,
+                    title: data.message,
+                    showConfirmButton: false,
+                    timer: 2000,
+                  }).then((result) => {
+                    if (data.status === "success") {
+                      dispatch(
+                        setAccount({ description: content, avatar: accountSelector.account?.avatar, ...values})
+                      );
+                      setStatusEdit(false);
+                    }
+                  });
+                }
               }}
             >
               <Form className="profile-form">
-                {/* <Input
-                  type="file"
-                  name="avatar"
-                  id="upload-avatar"
-                  className="hidden-input"
-                /> */}
-                <button className="btn btn-edit-profile">
-                  <span className="flex items-center">
-                    <svg
-                      width="10"
-                      height="11"
-                      viewBox="0 0 10 11"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="mr-3"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        clipRule="evenodd"
-                        d="M8.34788 3.4453L8.93459 2.8586L7.6414 1.56543L7.05469 2.15213L8.34788 3.4453ZM7.60716 4.18585L6.31397 2.89268L1.47635 7.73022L1.17871 9.32103L2.76954 9.02339L7.60716 4.18585ZM9.70627 2.14944C10.0979 2.54108 10.0979 3.17606 9.70627 3.56769L3.39565 9.87821C3.321 9.95287 3.22551 10.0032 3.12173 10.0226L0.620082 10.4907C0.258333 10.5584 -0.0585009 10.2415 0.00918114 9.87978L0.477232 7.37817C0.496649 7.27439 0.546989 7.1789 0.621646 7.10425L6.93226 0.79373C7.3239 0.40209 7.95889 0.40209 8.35053 0.79373L9.70627 2.14944ZM9.47887 10.5H5.25792C4.56311 10.5 4.56311 9.44738 5.25792 9.44738H9.47887C10.1737 9.44738 10.1737 10.5 9.47887 10.5Z"
-                        fill="#3B3E44"
-                      />
-                    </svg>
-                    Sửa thông tin
-                  </span>
-                </button>
+                {!statusEdit ? (
+                  <button
+                    className="btn btn-edit-profile"
+                    onClick={() => setStatusEdit(true)}
+                  >
+                    <span className="flex items-center">
+                      <svg
+                        width="10"
+                        height="11"
+                        viewBox="0 0 10 11"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="mr-3"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          clipRule="evenodd"
+                          d="M8.34788 3.4453L8.93459 2.8586L7.6414 1.56543L7.05469 2.15213L8.34788 3.4453ZM7.60716 4.18585L6.31397 2.89268L1.47635 7.73022L1.17871 9.32103L2.76954 9.02339L7.60716 4.18585ZM9.70627 2.14944C10.0979 2.54108 10.0979 3.17606 9.70627 3.56769L3.39565 9.87821C3.321 9.95287 3.22551 10.0032 3.12173 10.0226L0.620082 10.4907C0.258333 10.5584 -0.0585009 10.2415 0.00918114 9.87978L0.477232 7.37817C0.496649 7.27439 0.546989 7.1789 0.621646 7.10425L6.93226 0.79373C7.3239 0.40209 7.95889 0.40209 8.35053 0.79373L9.70627 2.14944ZM9.47887 10.5H5.25792C4.56311 10.5 4.56311 9.44738 5.25792 9.44738H9.47887C10.1737 9.44738 10.1737 10.5 9.47887 10.5Z"
+                          fill="#3B3E44"
+                        />
+                      </svg>
+                      Sửa thông tin
+                    </span>
+                  </button>
+                ) : null}
                 <div className="grid grid-cols-2">
                   <div className="form-group">
                     <InputIcon
@@ -247,6 +314,7 @@ const HomeProfile = () => {
                       className="form-control"
                       placeholder="Nhập tên của bạn"
                       icon_position="before"
+                      disabled={!statusEdit}
                     >
                       <i className="fa-light fa-user text-gray-400"></i>
                     </InputIcon>
@@ -259,6 +327,7 @@ const HomeProfile = () => {
                       className="form-control"
                       placeholder="Nhập số điện thoại của bạn"
                       icon_position="before"
+                      disabled={!statusEdit}
                     >
                       <i className="fa-light fa-phone text-gray-400"></i>
                     </InputIcon>
@@ -267,12 +336,25 @@ const HomeProfile = () => {
                     <div className="flex items-center">
                       <div className="title-gender ml-5">Giới tính : </div>
                       <div className="ml-20">
-                        <Radio id="gender-male" name="gender" value="1">
+                        <Radio
+                          id="gender-male"
+                          name="gender"
+                          value="1"
+                          checked={newGender === 1}
+                         
+                          onClick={()=>setNewGender(1)}
+                        >
                           Nam
                         </Radio>
                       </div>
                       <div className="ml-40">
-                        <Radio id="gender-female" name="gender" value="2">
+                        <Radio
+                          id="gender-female"
+                          name="gender"
+                          value="2"
+                          checked={newGender === 2}
+                          onClick={()=>setNewGender(2)}
+                        >
                           Nữ
                         </Radio>
                       </div>
@@ -286,6 +368,7 @@ const HomeProfile = () => {
                       className="form-control"
                       placeholder="Mời bạn nhập email"
                       icon_position="before"
+                      disabled={true}
                     >
                       <svg
                         width="20"
@@ -312,6 +395,7 @@ const HomeProfile = () => {
                     className="form-control"
                     placeholder="Nhập địa chỉ của bạn"
                     icon_position="before"
+                    disabled={!statusEdit}
                   >
                     <svg
                       width="20"
@@ -341,14 +425,24 @@ const HomeProfile = () => {
                       value={content}
                       placeholder="Giới thiệu về bản thân của bạn"
                       onChange={setContent}
+                      readOnly={!statusEdit}
                     />
                   </div>
                 </div>
                 <div className="btn-tool-form flex mt-5">
-                  <button className="btn btn-update-profile" type="submit">
-                    Lưu thông tin
-                  </button>
-                  <button className="btn btn-cancel">Hủy bỏ</button>
+                  {statusEdit ? (
+                    <>
+                      <button className="btn btn-update-profile" type="submit">
+                        Lưu thông tin
+                      </button>
+                      <button
+                        className="btn btn-cancel"
+                        onClick={() => setStatusEdit(false)}
+                      >
+                        Hủy bỏ
+                      </button>
+                    </>
+                  ) : null}
                 </div>
               </Form>
             </Formik>
@@ -363,30 +457,41 @@ const HomeProfile = () => {
         <div className="modal-avatar">
           <ImageUploadAvatar
             image={imageUrl}
-            imageOrigin={account.avatar}
+            imageOrigin={accountSelector.account?.avatar}
+            isLoading={imageSelector.loading}
             uploadImage={uploadImage}
             deleteImage={deleteImage}
           ></ImageUploadAvatar>
         </div>
         <div className="modal-tool flex justify-end">
-          <Button
-            type="button"
-            className="btn btn__custom  btn__cancel mr-5"
-            fontSize="1.6rem"
-            height="3.6rem"
-            color="#316bff"
-          >
-            Hủy
-          </Button>
-          <Button
-            type="button"
-            className="btn btn__custom btn__submit"
-            fontSize="1.6rem"
-            height="3.6rem"
-            width="10.5rem"
-          >
-            Lưu
-          </Button>
+          {imageUrl ? (
+            <>
+              <Button
+                type="button"
+                className="btn btn__custom  btn__cancel mr-5"
+                fontSize="1.6rem"
+                height="3.6rem"
+                color="#316bff"
+                onClick={deleteImage}
+              >
+                Hủy
+              </Button>
+              <Button
+                type="button"
+                className="btn btn__custom btn__submit"
+                fontSize="1.6rem"
+                height="3.6rem"
+                width="10.5rem"
+                onClick={handleSaveImage}
+              >
+                {accountSelector.loading ? (
+                  <BouceLoading bgColor="white" dotNumber={3}></BouceLoading>
+                ) : (
+                  "Lưu"
+                )}
+              </Button>
+            </>
+          ) : null}
         </div>
       </Modal>
     </HomeProfileStyles>

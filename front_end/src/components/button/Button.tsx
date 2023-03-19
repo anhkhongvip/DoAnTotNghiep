@@ -8,6 +8,9 @@ interface styleProps {
   readonly color?: string;
 }
 const ButtonStyles = styled.div<styleProps>`
+  display: flex;
+  justify-content: center;
+  align-items: center;
   .btn {
     &__custom {
       font-size: ${(props) => (props.fontSize ? props.fontSize : "2rem")};
@@ -45,7 +48,7 @@ type Props = {
   color?: string;
   type: "submit" | "reset" | "button" | undefined;
   disabled?: boolean;
-  onClick?: () => void;
+  onClick?: (event: React.MouseEvent) => void;
 };
 const Button = ({
   isLoading,

@@ -12,8 +12,14 @@ export class Service {
   @Column({ type: "varchar" })
   public icon_service: string;
 
-  @Column({ type: "timestamp" }) // Recommended
+
+  @Column({type: "int"})
+  public type_service: number; // 1: default -  2: popular - 3: safety
+
+
+  @Column({ type: "timestamp", default: () => 'CURRENT_TIMESTAMP' }) // Recommended
   created_at: Date;
+
 
   @OneToMany(() => Home_Service, (home_service) => home_service.home)
   home_services: Home_Service[];

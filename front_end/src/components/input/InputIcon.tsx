@@ -10,6 +10,7 @@ type Props = {
   className?: string;
   placeholder?: string;
   icon_position?: string;
+  disabled?: boolean;
 };
 const InputIcon = ({ children, ...props }: Props) => {
   return (

@@ -1,10 +1,12 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { Swiper, SwiperSlide } from "swiper/react";
 import CategoryCard from "../../components/category/CategoryCard";
 import { Autoplay } from "swiper";
-import 'swiper/css/autoplay';
-import categoryList from "../../assets/JsonData/category-list.json"
+import "swiper/css/autoplay";
+import categoryList from "../../assets/JsonData/category-list.json";
+import { useAppDispatch } from "../../app/hooks";
+import { getCategoriesAsync } from "../../services/category.service";
 const HomeDiscoveryStyles = styled.div`
   margin-top: 7rem;
   .home-discovery {
@@ -17,9 +19,19 @@ const HomeDiscoveryStyles = styled.div`
   }
 `;
 
-
-
 const HomeDiscovery = () => {
+  const dispatch = useAppDispatch();
+  const [categories, setCategories] = useState<any>([]);
+  useEffect(() => {
+    async function fetchCategories() {
+      let {
+        payload: { data },
+      } = await dispatch(getCategoriesAsync());
+      setCategories([...data.categories, ...data.categories]);
+    }
+    fetchCategories();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   return (
     <HomeDiscoveryStyles>
       <div className="home-discovery">
@@ -37,7 +49,7 @@ const HomeDiscovery = () => {
             }}
             spaceBetween={30}
           >
-            {categoryList.map((item, index) => (
+            {categories.map((item: any, index: number) => (
               <SwiperSlide key={index}>
                 <CategoryCard item={item}></CategoryCard>
               </SwiperSlide>

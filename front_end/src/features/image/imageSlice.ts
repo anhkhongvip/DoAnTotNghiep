@@ -7,10 +7,12 @@ import {
 
 export interface ImageState {
   data: any;
+  loading: boolean;
 }
 
 const initialState: ImageState = {
   data: {},
+  loading: false,
 };
 
 export const imageSlice = createSlice({
@@ -23,14 +25,18 @@ export const imageSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(uploadImageAsync.fulfilled, (state, action) => {
-        return action.payload;
+          state.loading = false;
+      })
+      .addCase(uploadImageAsync.pending, (state, action) => {
+        state.loading = true;
       })
       .addCase(uploadImageAsync.rejected, (state) => {})
       .addCase(deleteImageAsync.fulfilled, (state, action) => {
-        return action.payload;
       })
       .addCase(deleteImageAsync.rejected, (state) => {});
   },
 });
+
+export const selectImage = (state: RootState) => state.image;
 
 export default imageSlice.reducer;

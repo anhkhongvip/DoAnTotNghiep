@@ -6,16 +6,22 @@ import React, {
   useState,
 } from "react";
 import styled from "styled-components";
-import { Link, useNavigate  } from "react-router-dom";
-import ModalManagerAuth from "../../components/modal/ModalManagerAuth";
-import useClickOutside from "../../hooks/useClickOutside";
-import { DropdownMenu } from "../../components/dropdown";
-import { useModal } from "../../contexts/modalContext";
-import { ModalContextType } from "../../@types/modal";
-import { AuthContextType } from "../../@types/auth";
-import useAuth from "../../hooks/useAuth";
-import useResize from "../../hooks/useResize";
-import { useAuthentication } from "../../contexts/authContext";
+import { Link, useNavigate } from "react-router-dom";
+import ModalManagerAuth from "../../../components/modal/ModalManagerAuth";
+import useClickOutside from "../../../hooks/useClickOutside";
+import { DropdownMenu } from "../../../components/dropdown";
+import { useModal } from "../../../contexts/modalContext";
+import { ModalContextType } from "../../../@types/modal";
+import { AuthContextType } from "../../../@types/auth";
+import useAuth from "../../../hooks/useAuth";
+import useResize from "../../../hooks/useResize";
+import { useAuthentication } from "../../../contexts/authContext";
+import { getAccountAsync } from "../../../services/account.service";
+import { useAppDispatch, useAppSelector } from "../../../app/hooks";
+import {
+  removeAccount,
+  selectAccount,
+} from "../../../features/account/accountSlice";
 const HeaderStyles = styled.header`
   .navbar {
     max-width: 1440px;
@@ -95,8 +101,22 @@ const Header = () => {
   useClickOutside(nodeRef, () => setShowDropdownMenu(false));
   const [coords, setCoords] = useResize(nodeRef);
   const { modalOpen, setModalOpen } = useModal() as ModalContextType;
-  const {account, setAccount, setToken } = useAuthentication() as AuthContextType;
+  const [token, setToken] = useState<string>(localStorage.getItem("token")!);
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+  const accountSelector = useAppSelector(selectAccount);
+
+  useEffect(() => {
+    async function fetchUser() {
+      if (token === "") {
+        dispatch(removeAccount());
+      } else {
+        await dispatch(getAccountAsync(token));
+      }
+    }
+    fetchUser();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token]);
   const openModal = (event: React.MouseEvent<HTMLElement>) => {
     event.preventDefault();
     const target = event.target as HTMLButtonElement;
@@ -117,10 +137,10 @@ const Header = () => {
   };
 
   const handleLogout = () => {
-    setAccount(null);
-    setToken('');
+    dispatch(removeAccount());
+    setToken("");
     localStorage.setItem("token", "");
-    navigate('/')
+    navigate("/");
   };
 
   return (
@@ -128,12 +148,12 @@ const Header = () => {
       <nav className="navbar" onClick={openModal}>
         <Link to="/" className="navbar-brand">
           <div className="navbar-logo">
-            <img src="./logo-main.png" alt="" />
+            <img src="/logo-main.png" alt="" />
           </div>
           <h3 className="navbar-brand__title">TripGuide</h3>
         </Link>
         <div className="navbar-nav">
-          {account ? (
+          {accountSelector.account ? (
             <>
               <div className="navbar-notification">
                 <svg
@@ -159,10 +179,15 @@ const Header = () => {
               >
                 <div className="navbar-profile flex items-center">
                   <div className="profile-avatar">
-                    <img src={account.avatar} alt="img-avatar" />
+                    <img
+                      src={accountSelector.account?.avatar}
+                      alt="img-avatar"
+                    />
                   </div>
                   <div className="profile-info flex items-center">
-                    <h3 className="profile-info__name">{account.username}</h3>
+                    <h3 className="profile-info__name">
+                      {accountSelector.account?.username}
+                    </h3>
                     <div className="profile-tool">
                       <i className="fa-solid fa-caret-down"></i>
                     </div>

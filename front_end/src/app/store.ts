@@ -1,9 +1,13 @@
 import { configureStore, ThunkAction, Action } from "@reduxjs/toolkit";
 import counterReducer from "../features/counter/counterSlice";
+import imageReducer from "../features/image/imageSlice";
+import accountReducer from "../features/account/accountSlice";
 import logger from "redux-logger";
 export const store = configureStore({
   reducer: {
     counter: counterReducer,
+    image: imageReducer,
+    account: accountReducer,
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware({
     serializableCheck: false,

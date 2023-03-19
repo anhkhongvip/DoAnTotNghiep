@@ -10,8 +10,7 @@ import { useAppDispatch } from "../../app/hooks";
 import { loginAsync } from "../../services/auth.service";
 import { useModal } from "../../contexts/modalContext";
 import { ModalContextType } from "../../@types/modal";
-import { useAuthentication } from "../../contexts/authContext";
-import { AuthContextType } from "../../@types/auth";
+import { setAccount } from "../../features/account/accountSlice";
 const LoginStyles = styled.div`
   .form-auth {
     &-header {
@@ -87,7 +86,6 @@ const Login = () => {
 
   const dispatch = useAppDispatch();
   const { setModalOpen } = useModal() as ModalContextType;
-  const { setToken } = useAuthentication() as AuthContextType;
   return (
     <LoginStyles>
       <div className="social-network flex items-center">
@@ -142,8 +140,8 @@ const Login = () => {
             }).then((result) => {
               if (data.status === "success") {
                 setModalOpen("");
-                localStorage.setItem("token", data.token)
-                setToken(data.token);
+                dispatch(setAccount(data.account))
+                localStorage.setItem("token", data.token);
               }
             });
             actions.setSubmitting(false);

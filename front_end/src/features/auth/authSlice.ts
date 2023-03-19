@@ -22,13 +22,11 @@ export const authSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(registerAsync.fulfilled, (state, action) => {
-        return action.payload;
       })
       .addCase(registerAsync.rejected, (state) => {
         
       })
       .addCase(loginAsync.fulfilled, (state, action) => {
-        return action.payload;
       })
       .addCase(loginAsync.rejected, (state) => {});
   },

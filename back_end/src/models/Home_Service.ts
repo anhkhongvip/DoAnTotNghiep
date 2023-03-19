@@ -7,10 +7,7 @@ export class Home_Service {
   @PrimaryGeneratedColumn({ type: "int" })
   public id: number;
 
-  @Column({ type: "int"})
-  public price: number;
-
-  @Column({ type: 'timestamp' }) // Recommended
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' }) // Recommended
   created_at: Date;
 
   @ManyToOne(() => Home, (home) => home.home_services)

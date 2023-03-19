@@ -24,7 +24,7 @@ export class Account {
   })
   public avatar: string;
 
-  @Column({ type: "varchar", nullable: true })
+  @Column({ type: "text", nullable: true })
   public description: string | null;
 
   @Column({ type: "int", nullable: true }) // 1: nam  - 2: nữ

@@ -15,8 +15,18 @@ const MyInputStyles = styled.div<styleProps>`
   position: relative;
   input {
     background-color: #e7ecf3 !important;
-    padding-right: ${(props) => (props.hasIcon ? (props.iconPosition === 'after' ? "5rem" : "2rem") : "2rem")};
-    padding-left:  ${(props) => (props.hasIcon ? (props.iconPosition === 'after' ? "2rem" : "5rem") : "2rem")};
+    padding-right: ${(props) =>
+      props.hasIcon
+        ? props.iconPosition === "after"
+          ? "5rem"
+          : "2rem"
+        : "2rem"};
+    padding-left: ${(props) =>
+      props.hasIcon
+        ? props.iconPosition === "after"
+          ? "2rem"
+          : "5rem"
+        : "2rem"};
     background-color: inherit;
     font-size: 1.4rem;
     width: 100%;
@@ -25,8 +35,8 @@ const MyInputStyles = styled.div<styleProps>`
   .input-icon {
     position: absolute;
     top: 50%;
-    right: ${(props) => (props.iconPosition === 'after' ? '2rem' : '')};
-    left : ${(props) => (props.iconPosition === 'after' ? '' : '2rem')};
+    right: ${(props) => (props.iconPosition === "after" ? "2rem" : "")};
+    left: ${(props) => (props.iconPosition === "after" ? "" : "2rem")};
     transform: translateY(-50%);
   }
 `;
@@ -46,30 +56,30 @@ type Props = {
   id?: string;
   className?: string;
   placeholder?: string;
+  disabled?: boolean;
 };
 
-const Input = ({
-  children,
-  icon_position = "",
-  ...props
-}: Props) => {
-  const [field, meta] = useField({name: props.name});  
+const Input = ({ children, icon_position = "", ...props }: Props) => {
+  const [field, meta] = useField({ name: props.name });
   return (
-    <MyInputStyles hasIcon={children ? true : false} iconPosition={icon_position}>
+    <MyInputStyles
+      hasIcon={children ? true : false}
+      iconPosition={icon_position}
+    >
       {children ? (
         icon_position === "before" ? (
           <>
-            <input {...props} {...field}/>
+            <input  {...field} {...props}/>
             <div className="input-icon cursor-pointer">{children}</div>
           </>
         ) : (
           <>
             <div className="input-icon cursor-pointer">{children}</div>
-            <input {...props} {...field}/>
+            <input  {...field} {...props}/>
           </>
         )
       ) : (
-        <input {...props} {...field}/>
+        <input  {...field} {...props}/>
       )}
     </MyInputStyles>
   );

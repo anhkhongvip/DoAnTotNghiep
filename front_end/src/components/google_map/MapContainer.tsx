@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import {
   GoogleMap,
   LoadScript,
-  InfoWindow,
   MarkerF,
 } from "@react-google-maps/api";
 
@@ -33,6 +32,7 @@ const MapContainer = () => {
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(success);
   },[]);
+
   return (
     <LoadScript googleMapsApiKey="AIzaSyDzzi_VBcf2Oef6LTViLU767UPNHlnIze4">
       <GoogleMap

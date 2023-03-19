@@ -4,12 +4,14 @@ import styled from "styled-components";
 interface styleProps {
   readonly size: string;
   readonly borderSize: string;
+  readonly borderColor?: string;
 }
 
 const SpinnerStyles = styled.div<styleProps>`
   width: ${(props) => props.size};
   height: ${(props) => props.size};
-  border: ${(props) => props.borderSize} solid white;
+  border: ${(props) => props.borderSize} solid;
+  border-color: ${(props) => props.borderColor};
   border-top: ${(props) => props.borderSize} solid transparent;
   border-bottom: ${(props) => props.borderSize} solid transparent;
   border-radius: 100rem;
@@ -21,8 +23,23 @@ const SpinnerStyles = styled.div<styleProps>`
     }
   }
 `;
-const LoadingSpinner = ({ size = "40px", borderSize = "5px" }) => {
-  return <SpinnerStyles size={size} borderSize={borderSize}></SpinnerStyles>;
+type Props = {
+  size?: string;
+  borderSize?: string;
+  borderColor?: string;
+}
+const LoadingSpinner = ({
+  size = "35px",
+  borderSize = "5px",
+  borderColor = "white",
+}: Props) => {
+  return (
+    <SpinnerStyles
+      size={size}
+      borderSize={borderSize}
+      borderColor={borderColor}
+    ></SpinnerStyles>
+  );
 };
 
 export default LoadingSpinner;

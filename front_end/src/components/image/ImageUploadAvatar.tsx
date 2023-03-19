@@ -68,14 +68,25 @@ const ImageUploadAvatarStyles = styled.div`
       }
     }
   }
+
+  .loading-avatar {
+    position: absolute;
+    z-index: 3;
+    top: 50%;
+    left: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: translate(-50%, -50%);
+  }
 `;
 
 type Props = {
   image?: string;
   imageOrigin?: string;
-  isLoading?: boolean;
   classname?: string;
-  deleteImage?: () => void;
+  isLoading?: boolean;
+  deleteImage?: (event: React.MouseEvent) => void;
   uploadImage?: (event: React.ChangeEvent) => void;
 };
 
@@ -83,6 +94,7 @@ const ImageUploadAvatar = ({
   image,
   imageOrigin,
   classname,
+  isLoading = false,
   deleteImage = () => {},
   uploadImage = () => {},
 }: Props) => {
@@ -104,7 +116,11 @@ const ImageUploadAvatar = ({
             <img src={image ? image : imageOrigin} alt="img-avatar" />
           </div>
         </div>
-        {image ? (
+        {isLoading ? (
+          <div className="loading-avatar">
+            <LoadingSpinner borderColor="blue"></LoadingSpinner>
+          </div>
+        ) : image ? (
           <button
             type="button"
             className="image-btn btn-delete-image transition-all"

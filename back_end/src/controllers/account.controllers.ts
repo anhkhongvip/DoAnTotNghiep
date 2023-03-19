@@ -71,6 +71,7 @@ class AccountController {
                 status: "success",
                 message: "Đăng nhập thành công",
                 token: `Bearer ${token}`,
+                account
               },
             });
           } else {
@@ -100,7 +101,31 @@ class AccountController {
     const account = await this.accountRepository.findOneBy({
       id: req.userId || req.params.id,
     });
-    res.status(200).json({ account });
+    res.status(200).json({ data: { account } });
+  };
+
+  updateAccount = async (req: Request, res: Response) => {
+    try {
+      await this.accountRepository
+        .createQueryBuilder()
+        .update(Account)
+        .set(req.body)
+        .where("id = :id", { id: req.userId })
+        .execute();
+      return res.status(200).json({
+        data: {
+          status: "success",
+          message: "Cập nhật tài khoản thành công",
+        },
+      });
+    } catch (error) {
+      res.status(400).json({
+        data: {
+          message: "Cập nhật không thành công",
+          error,
+        },
+      });
+    }
   };
 }
 

@@ -37,14 +37,18 @@ type Props = {
   id?: string;
   name: string;
   value: string;
+  disabled?: boolean;
+  checked?: boolean;
+  onClick?: ()=> void;
 };
 
 const Radio = ({ children, ...props }: Props) => {
-  const [field, meta] = useField({ name: props.name });
+  
+  const [field, meta] = useField({ name: props.name });  
   return (
-    <RadioStyles>
+    <RadioStyles onClick={props.onClick}>
       <div className="radio">
-        <input type="radio" className="radio__input" {...props} {...field} />
+        <input type="radio" className="radio__input" {...field} {...props}  />
         <label htmlFor={props.id} className="radio__label">
           {children}
         </label>

@@ -51,9 +51,8 @@ const CategoryCardStyles = styled.div`
 
 interface itemCategory {
   id: number;
-  title: string;
-  src_img: string;
-  amount: number;
+  name: string;
+  image: string;
 }
 
 type Props = {
@@ -66,15 +65,15 @@ const CategoryCard = ({ item, children }: Props) => {
     <CategoryCardStyles>
       <Link to="/" className="category-card">
         <div className="category-card__image img-content">
-          <img src={item.src_img} alt="" />
+          <img src={item.image} alt="" />
         </div>
         <div className="category-card__header">
-          <h3 className="title">{item.title}</h3>
+          <h3 className="title">{item.name}</h3>
         </div>
         <div className="category-card__info">
-          <h3 className="title">{item.title}</h3>
+          <h3 className="title">{item.name}</h3>
           <span className="amount">
-            {item.amount} {item.title}
+            {1000} {item.name}
           </span>
         </div>
       </Link>

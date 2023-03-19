@@ -2,7 +2,7 @@ import React, { Fragment } from "react";
 import { Outlet } from "react-router-dom";
 import Header from "./Header";
 
-const Layout = () => {
+const HomeLayout = () => {
   return (
     <Fragment>
       <header className="header">
@@ -16,4 +16,4 @@ const Layout = () => {
   );
 };
 
-export default Layout;
+export default HomeLayout;

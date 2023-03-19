@@ -23,8 +23,6 @@ const uploadImageAsync = createAsyncThunk(
 const deleteImageAsync = createAsyncThunk(
     "image/deleteImageAsync",
     async (public_id: string) => {
-      console.log(public_id);
-      
       try {
         const res: any = await axios.delete(
           `${process.env.REACT_APP_URL}/api/upload/${public_id}`,

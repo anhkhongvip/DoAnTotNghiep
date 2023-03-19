@@ -11,7 +11,7 @@ export default function useAuth(token: string) {
         setAccount(null);
       } else {
         let res = await dispatch(getAccountAsync(token));
-        let { account } = res.payload;
+        let { account } = res.payload.data;
         setAccount(account);
       }
     }

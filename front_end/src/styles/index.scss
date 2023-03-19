@@ -18,6 +18,22 @@
   max-width: 1260px;
   margin: 0 auto;
 }
+
+.container-md {
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.container-sm {
+  width: 100%;
+  max-width: 768px;
+  margin: 0 auto;
+}
+
+
+
+
 a {
   text-decoration: none;
   color: inherit;
@@ -184,6 +200,5 @@ img {
   }
 }
 .ql-picker-label svg {
-  right: -1.5rem!important;
+  right: -1.5rem !important;
 }
-

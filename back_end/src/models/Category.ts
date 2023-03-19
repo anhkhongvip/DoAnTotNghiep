@@ -9,7 +9,10 @@ export class Category {
   @Column({ type: "varchar" })
   public name: string;
 
-  @Column({ type: "timestamp" }) // Recommended
+  @Column({type: "varchar"})
+  public image: string;
+
+  @Column({ type: "timestamp", default: () => 'CURRENT_TIMESTAMP'}) // Recommended
   created_at: Date;
 
   @OneToMany(() => Home, (home) => home.category)
