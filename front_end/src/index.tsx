@@ -17,6 +17,8 @@ import "swiper/scss";
 import { ModalProvider } from "./contexts/modalContext";
 import { ThemeProvider } from "styled-components";
 import { AuthProvider } from "./contexts/authContext";
+import { CheckProvider } from "./contexts/checkContext";
+
 const container = document.getElementById("root")!;
 const root = createRoot(container);
 
@@ -24,11 +26,13 @@ root.render(
   <BrowserRouter>
     <ThemeProvider theme={theme}>
       <Provider store={store}>
-        <AuthProvider>
-          <ModalProvider>
-            <App />
-          </ModalProvider>
-        </AuthProvider>
+        <CheckProvider>
+          <AuthProvider>
+            <ModalProvider>
+              <App />
+            </ModalProvider>
+          </AuthProvider>
+        </CheckProvider>
       </Provider>
       <ToastContainer></ToastContainer>
     </ThemeProvider>

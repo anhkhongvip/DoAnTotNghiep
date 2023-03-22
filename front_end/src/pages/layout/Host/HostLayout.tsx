@@ -12,12 +12,13 @@ const HostLayoutStyles = styled.div`
   }
 
   .main {
-    max-height: 100vh;
-    height: 100vh;
+    height: auto;
+    margin-bottom: 12rem;
   }
 
   .footer {
-    position: sticky;
+    position: fixed;
+    width: 100%;
     z-index: 10;
     bottom: 0;
     left: 0;

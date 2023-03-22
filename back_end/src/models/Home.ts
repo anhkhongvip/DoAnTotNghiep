@@ -23,9 +23,6 @@ export class Home {
   public max_passenger: number;
 
   @Column({ type: "int", default: 0 })
-  public bedroom: number;
-
-  @Column({ type: "int", default: 0 })
   public bed: number;
 
   @Column({ type: "int", default: 0 })

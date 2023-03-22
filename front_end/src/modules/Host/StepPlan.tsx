@@ -5,7 +5,7 @@ interface styleProps {
   readonly width?: string;
   readonly height?: string;
 }
-const AboutYourPlaceStyles = styled.div`
+const StepPlanStyles = styled.div`
   margin-bottom: 4rem;
   .banner {
     margin-top: 5rem;
@@ -44,23 +44,24 @@ const AboutYourPlaceStyles = styled.div`
     }
   }
 `;
-const AboutYourPlace = () => {
-  const param = useParams();
 
+type Props = {
+  step: string
+  title: string;
+  description: string;
+};
+
+const StepPlan = ({ title, description, step }: Props) => {
   return (
-    <AboutYourPlaceStyles>
+    <StepPlanStyles>
       <div className="container">
         <div className="banner">
           <div className="banner-content">
-            <h3 className="step">Bước 1</h3>
-            <h2 className="title">
-              Chia sẻ thông tin về chỗ ở của bạn cho chúng tôi
-            </h2>
+            <h3 className="step">Bước {step}</h3>
+            <h2 className="title">{title}</h2>
             <p className="description">
-              Trong bước này, chúng tôi sẽ hỏi xem bạn cho thuê loại chỗ ở nào
-              và bạn muốn cho khách đặt toàn bộ nhà hay chỉ một phòng cụ thể.
-              Sau đó, hãy cho chúng tôi biết vị trí và số lượng khách có thể ở
-              tại đó.
+              {description}
+             
             </p>
           </div>
           <div className="banner-video">
@@ -77,8 +78,8 @@ const AboutYourPlace = () => {
           </div>
         </div>
       </div>
-    </AboutYourPlaceStyles>
+    </StepPlanStyles>
   );
 };
 
-export default AboutYourPlace;
+export default StepPlan;

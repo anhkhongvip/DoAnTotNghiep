@@ -43,7 +43,7 @@ const LocationStyles = styled.div`
     }
   }
 
-  .content {
+  .description {
     color: gray;
     font-weight: bold;
     margin-bottom: 2rem;
@@ -188,7 +188,7 @@ const Location = () => {
     <LocationStyles>
       <div className="container-sm">
         <h2 className="title">Chỗ ở của bạn nằm ở đâu?</h2>
-        <p className="content">
+        <p className="description">
           Địa chỉ của bạn chỉ được chia sẻ với khách sau khi họ đặt phòng thành
           công.
         </p>
