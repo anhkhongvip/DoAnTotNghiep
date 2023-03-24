@@ -1,5 +1,5 @@
-import React, { Fragment } from "react";
-import { Outlet } from "react-router-dom";
+import React, { Fragment, useState } from "react";
+import { Outlet, useOutletContext } from "react-router-dom";
 import styled from "styled-components";
 import Footer from "./Footer";
 import Header from "./Header";
@@ -24,7 +24,17 @@ const HostLayoutStyles = styled.div`
     left: 0;
   }
 `;
+
+type ContextType = {
+  setData: (data: any) => void;
+  data: any;
+};
+
 const HostLayout = () => {
+  const [data, setData] = useState<any>();
+  const handleNext = () => {
+    console.log(data);
+  };
   return (
     <HostLayoutStyles>
       <Fragment>
@@ -32,10 +42,10 @@ const HostLayout = () => {
           <Header></Header>
         </header>
         <main className="main">
-          <Outlet></Outlet>
+          <Outlet context={{ setData }}></Outlet>
         </main>
         <footer className="footer">
-          <Footer></Footer>
+          <Footer handleNext={handleNext}></Footer>
         </footer>
       </Fragment>
     </HostLayoutStyles>
@@ -43,3 +53,7 @@ const HostLayout = () => {
 };
 
 export default HostLayout;
+
+export function useData() {
+  return useOutletContext<ContextType>();
+}

@@ -42,7 +42,6 @@ const HeaderStyles = styled.div`
 `;
 const Header = () => {
   const param = useParams();
-
   return (
     <HeaderStyles>
       <nav className="navbar">

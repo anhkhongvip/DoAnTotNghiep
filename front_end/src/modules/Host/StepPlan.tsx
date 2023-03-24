@@ -27,6 +27,8 @@ const StepPlanStyles = styled.div`
       }
       .description {
         font-weight: 600;
+        font-size: 1.8rem;
+        line-height: 1.8;
       }
     }
     &-video {
@@ -49,9 +51,10 @@ type Props = {
   step: string
   title: string;
   description: string;
+  src: string;
 };
 
-const StepPlan = ({ title, description, step }: Props) => {
+const StepPlan = ({ title, description, src,  step }: Props) => {
   return (
     <StepPlanStyles>
       <div className="container">
@@ -73,7 +76,7 @@ const StepPlan = ({ title, description, step }: Props) => {
               playsInline
               preload="auto"
             >
-              <source src="https://stream.media.muscache.com/zFaydEaihX6LP01x8TSCl76WHblb01Z01RrFELxyCXoNek.mp4?v_q=high" />
+              <source src={src} />
             </video>
           </div>
         </div>

@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { CheckContextType } from "../../@types/check";
 import TextareaAutoResize from "../../components/textarea/TextareaAutoResize";
 import { useCheck } from "../../contexts/checkContext";
 import { useData } from "../../pages/layout/Host/HostLayout";
-const TitleStyles = styled.div`
-  .title-page {
+const DescriptionStyles = styled.div`
+.title-page {
     max-width: 60rem;
+    margin-top: 7rem;
     .title {
       font-size: 2.9rem;
       font-weight: bold;
@@ -31,36 +32,33 @@ const TitleStyles = styled.div`
     margin-top: 1rem;
   }
 `;
-const Title = () => {
-  const [content, setContent] = useState<string>("");
+const Description = () => {
+  const [content, setContent] = useState<string>("Bạn sẽ có một khoảng thời gian tuyệt vời tại nơi ở thoải mái.");
   const { check, setCheck } = useCheck() as CheckContextType;
   const { setData } = useData();
   useEffect(() => {
-    if (content.length > 32 || content.length === 0) {
+    if (content.length > 500 || content.length === 0) {
       setCheck(true);
     } else {
       setCheck(false);
-      setData({title: content})
+      setData({ description: content });
     }
   }, [content]);
-
   return (
-    <TitleStyles>
+    <DescriptionStyles>
       <div className="container-sm title-page">
-        <h2 className="title">
-          Bây giờ, hãy đặt tiêu đề cho chỗ ở thuộc danh mục nhà của bạn
-        </h2>
+        <h2 className="title">Tạo phần mô tả</h2>
         <p className="description">
-          Tiêu đề ngắn cho hiệu quả tốt nhất. Đừng lo lắng, bạn luôn có thể thay
-          đổi tiêu đề sau.
+          Chia sẻ những điều tạo nên nét đặc biệt cho chỗ ở của bạn.
         </p>
         <TextareaAutoResize
-          fontSize="2.2rem"
+          fontSize="2rem"
           content={content}
           setContent={setContent}
+          height="240px"
           error={check && content.length !== 0}
         ></TextareaAutoResize>
-        <div className="character-entered">{content.length}/32</div>
+        <div className="character-entered">{content.length}/500</div>
         <div className="error-message-entered">
           {check && content.length !== 0 ? (
             <>
@@ -76,13 +74,13 @@ const Title = () => {
               >
                 <path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0zm0 10.2a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm.8-6.6H7.2v5.2h1.6z"></path>
               </svg>
-              <span className="ml-2">Số ký tự tối đa cho phép là 32</span>
+              <span className="ml-2">Số ký tự tối đa cho phép là 500</span>
             </>
           ) : null}
         </div>
       </div>
-    </TitleStyles>
+    </DescriptionStyles>
   );
 };
 
-export default Title;
+export default Description;

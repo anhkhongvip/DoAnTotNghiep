@@ -29,7 +29,7 @@ const FooterStyles = styled.div`
       }
     }
   }
-  
+
   .btn-next.not-allow {
     cursor: not-allowed;
     background-color: #dddddd;
@@ -38,7 +38,12 @@ const FooterStyles = styled.div`
     }
   }
 `;
-const Footer = () => {
+
+type Props = {
+  handleNext: () => void;
+};
+
+const Footer = ({handleNext}: Props) => {
   const { check } = useCheck() as CheckContextType;
   return (
     <FooterStyles>
@@ -49,7 +54,13 @@ const Footer = () => {
       </div>
       <div className="footer-content">
         <button className="btn-back">Quay lại</button>
-        <button className={`btn-next ${check ? 'not-allow' : ''}`} disabled={check} onClick={() => console.log("tiếp")}>Tiếp theo</button>
+        <button
+          className={`btn-next ${check ? "not-allow" : ""}`}
+          disabled={check}
+          onClick={handleNext}
+        >
+          Tiếp theo
+        </button>
       </div>
     </FooterStyles>
   );
