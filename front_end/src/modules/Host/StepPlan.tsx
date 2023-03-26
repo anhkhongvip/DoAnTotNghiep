@@ -1,6 +1,8 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useParams } from "react-router-dom";
 import styled from "styled-components";
+import { useAppDispatch, useAppSelector } from "../../app/hooks";
+import { setStep } from "../../features/room/roomSlice";
 interface styleProps {
   readonly width?: string;
   readonly height?: string;
@@ -48,24 +50,28 @@ const StepPlanStyles = styled.div`
 `;
 
 type Props = {
-  step: string
+  step: number;
+  stepTitle: number;
   title: string;
   description: string;
   src: string;
 };
 
-const StepPlan = ({ title, description, src,  step }: Props) => {
+const StepPlan = ({ title, description, src, step, stepTitle }: Props) => {
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    dispatch(setStep(step));
+  }, [step, dispatch]);
+  
   return (
     <StepPlanStyles>
       <div className="container">
         <div className="banner">
           <div className="banner-content">
-            <h3 className="step">Bước {step}</h3>
+            <h3 className="step">Bước {stepTitle}</h3>
             <h2 className="title">{title}</h2>
-            <p className="description">
-              {description}
-             
-            </p>
+            <p className="description">{description}</p>
           </div>
           <div className="banner-video">
             <video

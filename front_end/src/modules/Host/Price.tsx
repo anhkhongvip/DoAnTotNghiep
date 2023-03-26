@@ -1,10 +1,13 @@
-import React, { ChangeEvent, useRef, useState } from "react";
+import React, { ChangeEvent, useRef, useState, useEffect } from "react";
 import styled from "styled-components";
-
+import { useCheck } from "../../contexts/checkContext";
+import { CheckContextType } from "../../@types/check";
+import { useAppDispatch } from "../../app/hooks";
+import { setStep } from "../../features/room/roomSlice";
 const PriceStyles = styled.div`
   .price-page {
     max-width: 60rem;
-    margin-top: 7rem;
+    margin-top: 10rem;
     .title {
       font-size: 2.9rem;
       font-weight: bold;
@@ -94,9 +97,31 @@ const PriceStyles = styled.div`
     }
   }
 `;
-const Price = () => {
+type Props = {
+  step: number
+}
+
+const Price = ({step}: Props) => {
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    dispatch(setStep(step));
+  }, [step, dispatch]);
+  
   const [price, setPrice] = useState<number>(150000);
+  const { check, setCheck } = useCheck() as CheckContextType;
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if(price > 50000000 || price < 100000) {
+      setCheck(false);
+    }
+    else {
+      setCheck(true);
+    }
+  }, [price])
+
+
   const handleChange = (event: ChangeEvent) => {
     const { value } = event.target as HTMLInputElement;
     let newValue = value;
@@ -146,7 +171,7 @@ const Price = () => {
             </button>
             <div
               className={`input-price ${
-                (price > 50000000 || price < 100000) && price !== 0
+                (price > 50000000 || price < 100000)
                   ? "not-allow"
                   : ""
               }`}
@@ -162,7 +187,10 @@ const Price = () => {
                 onChange={handleChange}
               />
             </div>
-            <button className={`btn-up ${price > 50000000 ? 'not-allow' : ''}`} onClick={() => handleClick("up")}>
+            <button
+              className={`btn-up ${price > 50000000 ? "not-allow" : ""}`}
+              onClick={() => handleClick("up")}
+            >
               <i className="fa-regular fa-plus"></i>
             </button>
           </div>

@@ -1,5 +1,7 @@
-import React from "react";
+import React, { useEffect } from "react";
 import styled from "styled-components";
+import { useAppDispatch } from "../../app/hooks";
+import { setStep } from "../../features/room/roomSlice";
 const StructureStyles = styled.div`
   .structure {
     &-title {
@@ -86,7 +88,17 @@ const StructureStyles = styled.div`
     }
   }
 `;
-const Structure = () => {
+
+type Props = {
+  step: number;
+};
+
+const Structure = ({ step }: Props) => {
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    dispatch(setStep(step));
+  }, [step, dispatch]);
   return (
     <StructureStyles>
       <div className="container-md">

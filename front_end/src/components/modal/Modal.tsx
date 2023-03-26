@@ -34,6 +34,7 @@ const ModalStyles = styled.div`
     &-title {
       font-size: 4rem;
       font-weight: 700;
+      padding: 0 2rem;
     }
     .btn-close-modal {
       position: absolute;

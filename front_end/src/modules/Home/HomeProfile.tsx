@@ -5,8 +5,6 @@ import { useFormik, Form, Field, ErrorMessage, Formik, useField } from "formik";
 import { Input, InputIcon } from "../../components/input";
 import HomeHeaderRouter from "./HomeHeaderRouter";
 import ReactQuill, { Quill } from "react-quill";
-import { useAuthentication } from "../../contexts/authContext";
-import { AuthContextType } from "../../@types/auth";
 import { Radio } from "../../components/radio";
 import { ModalContextType } from "../../@types/modal";
 import { useModal } from "../../contexts/modalContext";

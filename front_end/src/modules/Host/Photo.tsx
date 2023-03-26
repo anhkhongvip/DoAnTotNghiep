@@ -10,6 +10,7 @@ import {
   deleteImageAsync,
   uploadImageAsync,
 } from "../../services/image.service";
+import { setStep } from "../../features/room/roomSlice";
 const PhotoStyles = styled.div`
   .title {
     display: inline-block;
@@ -135,8 +136,11 @@ interface Image {
   publicId: string | null;
   url: string | null;
 }
+type Props = {
+  step: number;
+};
 
-const Photo = () => {
+const Photo = ({ step }: Props) => {
   const [bannerThumb, setBannerThumb] = useState<Image>({
     publicId: null,
     url: null,
@@ -145,16 +149,18 @@ const Photo = () => {
   const [imageList, setImageList] = useState<Array<Image>>([]);
   const [nameLoading, setNameLoading] = useState<string>("");
   const dispatch = useAppDispatch();
+  useEffect(() => {
+    dispatch(setStep(step));
+  }, [step, dispatch]);
   const imageSelector = useAppSelector(selectImage);
 
   useEffect(() => {
-    if(bannerThumb.url && imageList.length === 3) {
-      setCheck(false)
+    if (bannerThumb.url && imageList.length === 3) {
+      setCheck(false);
+    } else {
+      setCheck(true);
     }
-    else {
-      setCheck(true)
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bannerThumb, imageList]);
 
   const uploadImage = async (event: React.ChangeEvent, nameUpdate: string) => {

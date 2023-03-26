@@ -1,5 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
+import { useAppDispatch } from "../../app/hooks";
+import { setStep } from "../../features/room/roomSlice";
 const FloorPlanStyles = styled.div`
   .title {
     display: inline-block;
@@ -77,7 +79,17 @@ interface IitemAmount {
 
 type NameObject = "max_passenger" | "bed" | "bathroom";
 
-const FloorPlan = () => {
+type Props = {
+  step: number
+}
+
+const FloorPlan = ({step}: Props) => {
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    dispatch(setStep(step));
+  }, [step, dispatch]);
+
   const [itemAmount, setItemAmount] = useState<IitemAmount>({
     max_passenger: 4,
     bed: 1,

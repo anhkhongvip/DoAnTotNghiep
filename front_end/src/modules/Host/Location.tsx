@@ -8,6 +8,8 @@ import {
 import React, { ChangeEvent, useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import MapContainer from "../../components/google_map/MapContainer";
+import { useAppDispatch } from "../../app/hooks";
+import { setStep } from "../../features/room/roomSlice";
 
 type Coordinates = {
   lat: number;
@@ -91,7 +93,18 @@ const LocationStyles = styled.div`
     }
   }
 `;
-const Location = () => {
+
+type Props = {
+  step: number
+}
+
+const Location = ({step}: Props) => {
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    dispatch(setStep(step));
+  }, [step, dispatch]);
+  
   let infowindow: any = null;
   let geocoder: any;
   const [markers, setMarkers] = useState<any>([]);

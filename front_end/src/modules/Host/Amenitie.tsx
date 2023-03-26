@@ -1,5 +1,7 @@
-import React from "react";
+import React, { useEffect } from "react";
 import styled from "styled-components";
+import { setStep } from "../../features/room/roomSlice";
+import { useAppDispatch } from "../../app/hooks";
 const AmenitieStyles = styled.div`
   .amenitie {
     max-width: 60rem;
@@ -62,7 +64,16 @@ const AmenitieStyles = styled.div`
     }
   }
 `;
-const Amenitie = () => {
+type Props = {
+  step: number
+}
+
+const Amenitie = ({step}: Props) => {
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    dispatch(setStep(step));
+  }, [step, dispatch]);
   return (
     <AmenitieStyles>
       <div className="container-sm amenitie">

@@ -4,6 +4,8 @@ import { CheckContextType } from "../../@types/check";
 import TextareaAutoResize from "../../components/textarea/TextareaAutoResize";
 import { useCheck } from "../../contexts/checkContext";
 import { useData } from "../../pages/layout/Host/HostLayout";
+import { setStep } from "../../features/room/roomSlice";
+import { useAppDispatch } from "../../app/hooks";
 const TitleStyles = styled.div`
   .title-page {
     max-width: 60rem;
@@ -31,16 +33,27 @@ const TitleStyles = styled.div`
     margin-top: 1rem;
   }
 `;
-const Title = () => {
+
+type Props = {
+  step: number;
+};
+
+const Title = ({ step }: Props) => {
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    dispatch(setStep(step));
+  }, [step, dispatch]);
+  
   const [content, setContent] = useState<string>("");
   const { check, setCheck } = useCheck() as CheckContextType;
   const { setData } = useData();
   useEffect(() => {
     if (content.length > 32 || content.length === 0) {
-      setCheck(true);
-    } else {
       setCheck(false);
-      setData({title: content})
+    } else {
+      setCheck(true);
+      setData({ title: content });
     }
   }, [content]);
 
@@ -58,11 +71,11 @@ const Title = () => {
           fontSize="2.2rem"
           content={content}
           setContent={setContent}
-          error={check && content.length !== 0}
+          error={!check && content.length !== 0}
         ></TextareaAutoResize>
         <div className="character-entered">{content.length}/32</div>
         <div className="error-message-entered">
-          {check && content.length !== 0 ? (
+          {!check && content.length !== 0 ? (
             <>
               <svg
                 viewBox="0 0 16 16"

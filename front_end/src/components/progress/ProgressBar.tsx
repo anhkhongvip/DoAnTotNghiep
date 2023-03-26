@@ -1,7 +1,9 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
-
-const ProgressBarStyles = styled.div`
+interface styleProps {
+  readonly width?: string
+}
+const ProgressBarStyles = styled.div<styleProps>`
   width: 100%;
   .container-bar {
     height: 0.6rem;
@@ -11,18 +13,21 @@ const ProgressBarStyles = styled.div`
   .filter-bar {
     transition: width 2s ease-in-out;
     height: 100%;
-    width: 50%;
+    width: ${props => props.width ? props.width : 'auto'};
     background-color: #000000;
   }
 `;
 
 type Props = {
   className?: string;
+  width: string;
 };
 
-const ProgressBar = ({ className, ...props }: Props) => {
+const ProgressBar = ({ className, width, ...props }: Props) => {
+  console.log(width);
+  
   return (
-    <ProgressBarStyles className={className}>
+    <ProgressBarStyles className={className} width={width}>
       <div className="container-bar">
         <div className="filter-bar"></div>
       </div>
@@ -30,4 +35,4 @@ const ProgressBar = ({ className, ...props }: Props) => {
   );
 };
 
-export default ProgressBar;
+export default React.memo(ProgressBar);
