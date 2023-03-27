@@ -6,7 +6,9 @@ import { useCheck } from "../../contexts/checkContext";
 import { useData } from "../../pages/layout/Host/HostLayout";
 import { setStep } from "../../features/room/roomSlice";
 import { useAppDispatch } from "../../app/hooks";
+import { useParams } from "react-router-dom";
 const TitleStyles = styled.div`
+  margin-top: 7rem;
   .title-page {
     max-width: 60rem;
     .title {
@@ -40,20 +42,29 @@ type Props = {
 
 const Title = ({ step }: Props) => {
   const dispatch = useAppDispatch();
+  const [content, setContent] = useState<string>("");
+  const { check, setCheck } = useCheck() as CheckContextType;
+  const { data, setData } = useData();
+  const { room_id } = useParams();
 
   useEffect(() => {
     dispatch(setStep(step));
+    setData({
+      nextPage: `/become-a-host/${room_id}/description`,
+      backPage: `/become-a-host/${room_id}/photos`,
+      title: content,
+    });
   }, [step, dispatch]);
-  
-  const [content, setContent] = useState<string>("");
-  const { check, setCheck } = useCheck() as CheckContextType;
-  const { setData } = useData();
+
   useEffect(() => {
     if (content.length > 32 || content.length === 0) {
       setCheck(false);
     } else {
       setCheck(true);
-      setData({ title: content });
+      setData({
+        ...data,
+        title: content,
+      });
     }
   }, [content]);
 

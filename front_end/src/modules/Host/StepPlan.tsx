@@ -3,6 +3,9 @@ import { useParams } from "react-router-dom";
 import styled from "styled-components";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import { setStep } from "../../features/room/roomSlice";
+import { useData } from "../../pages/layout/Host/HostLayout";
+import { useCheck } from "../../contexts/checkContext";
+import { CheckContextType } from "../../@types/check";
 interface styleProps {
   readonly width?: string;
   readonly height?: string;
@@ -59,11 +62,26 @@ type Props = {
 
 const StepPlan = ({ title, description, src, step, stepTitle }: Props) => {
   const dispatch = useAppDispatch();
+  const { room_id } = useParams();
+  const { setData } = useData();
+  const { setCheck } = useCheck() as CheckContextType;
 
   useEffect(() => {
     dispatch(setStep(step));
+    if(step === 1) {
+      setData({nextPage: `/become-a-host/${room_id}/structure`, backPage: `/become-a-host/overview`})
+    }
+    else if(step === 5) {
+      setData({nextPage: `/become-a-host/${room_id}/amenities`, backPage: `/become-a-host/${room_id}/floor-plan`})
+    }
+    else {
+      setData({nextPage: `/become-a-host/${room_id}/price`, backPage: `/become-a-host/${room_id}/description`})
+    }
+    setCheck(true);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step, dispatch]);
-  
+
+
   return (
     <StepPlanStyles>
       <div className="container">

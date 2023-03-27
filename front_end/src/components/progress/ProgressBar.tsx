@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 interface styleProps {
-  readonly width?: string
+  readonly width?: string;
 }
 const ProgressBarStyles = styled.div<styleProps>`
   width: 100%;
@@ -13,7 +13,7 @@ const ProgressBarStyles = styled.div<styleProps>`
   .filter-bar {
     transition: width 2s ease-in-out;
     height: 100%;
-    width: ${props => props.width ? props.width : 'auto'};
+    width: ${(props) => (props.width ? props.width : "auto")};
     background-color: #000000;
   }
 `;
@@ -24,8 +24,6 @@ type Props = {
 };
 
 const ProgressBar = ({ className, width, ...props }: Props) => {
-  console.log(width);
-  
   return (
     <ProgressBarStyles className={className} width={width}>
       <div className="container-bar">
@@ -35,4 +33,4 @@ const ProgressBar = ({ className, width, ...props }: Props) => {
   );
 };
 
-export default React.memo(ProgressBar);
+export default ProgressBar;

@@ -1,8 +1,10 @@
 import React, { Fragment, useState } from "react";
-import { Outlet, useOutletContext } from "react-router-dom";
+import { Outlet, useNavigate, useOutletContext } from "react-router-dom";
 import styled from "styled-components";
 import Footer from "./Footer";
 import Header from "./Header";
+import { useAppDispatch } from "../../../app/hooks";
+import { createRoomAsync } from "../../../services/room.service";
 const HostLayoutStyles = styled.div`
   .header {
     position: sticky;
@@ -32,8 +34,46 @@ type ContextType = {
 
 const HostLayout = () => {
   const [data, setData] = useState<any>();
-  const handleNext = () => {
-    console.log(data);
+  const [loading, setLoading] = useState({
+    loadingBack: false,
+    loadingNext: false,
+  });
+  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+  function wait(time: number) {
+    return new Promise((resolve) => {
+      setTimeout(resolve, time);
+    });
+  }
+
+  const handleNext = async () => {
+    const { nextPage, backPage, ...restData } = data;
+    let newNextPage = nextPage;
+    setLoading({ ...loading, loadingNext: true });
+    await wait(1000);
+    setLoading({ ...loading, loadingNext: false });
+    if (nextPage === "begin") {
+      try {
+        let res: any = await dispatch(createRoomAsync({}));
+        if (res.payload.data.status === "success") {
+          const { id } = res.payload.data.results;
+          newNextPage = `/become-a-host/${id}/about-your-place`;
+        }
+      } catch (err) {
+        console.log(err);
+      }
+    } else if (nextPage === "end") {
+      newNextPage = "/hosting/listings";
+    } else {
+    }
+    navigate(newNextPage);
+  };
+  const handleBack = async () => {
+    const { backPage } = data;
+    setLoading({ ...loading, loadingBack: true });
+    await wait(1000);
+    setLoading({ ...loading, loadingBack: false });
+    navigate(backPage);
   };
   return (
     <HostLayoutStyles>
@@ -42,10 +82,17 @@ const HostLayout = () => {
           <Header></Header>
         </header>
         <main className="main">
-          <Outlet context={{ setData }}></Outlet>
+          <Outlet context={{ data, setData }}></Outlet>
         </main>
         <footer className="footer">
-          <Footer handleNext={handleNext}></Footer>
+          <Footer
+            handleNext={handleNext}
+            handleBack={handleBack}
+            nextPage={data?.nextPage}
+            backPage={data?.backPage}
+            loadingNext={loading.loadingNext}
+            loadingBack={loading.loadingBack}
+          ></Footer>
         </footer>
       </Fragment>
     </HostLayoutStyles>

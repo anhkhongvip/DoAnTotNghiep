@@ -21,6 +21,6 @@ export class Home_Day {
   @Column({ type: "timestamp", default: () => 'CURRENT_TIMESTAMP' }) // Recommended
   created_at: Date;
 
-  @ManyToOne(() => Home, (home) => home.home_days)
-  home: Home;
+  @Column({ type: "int", nullable: true }) //
+  public home_id : number;
 }

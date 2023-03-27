@@ -10,10 +10,10 @@ export class Home_Service {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' }) // Recommended
   created_at: Date;
 
-  @ManyToOne(() => Home, (home) => home.home_services)
-  home: Home;
+  @Column({ type: 'int'})
+  home_id: number;
 
-  @ManyToOne(() => Service, (service) => service.home_services)
-  service: Service;
-
+  @Column({ type: 'int'})
+  service_id: number;
+  
 }

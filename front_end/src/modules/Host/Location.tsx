@@ -5,11 +5,21 @@ import {
   MarkerF,
   useJsApiLoader,
 } from "@react-google-maps/api";
-import React, { ChangeEvent, useEffect, useRef, useState } from "react";
+import React, {
+  ChangeEvent,
+  KeyboardEvent,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import styled from "styled-components";
 import MapContainer from "../../components/google_map/MapContainer";
 import { useAppDispatch } from "../../app/hooks";
 import { setStep } from "../../features/room/roomSlice";
+import { useParams } from "react-router-dom";
+import { useData } from "../../pages/layout/Host/HostLayout";
+import { useCheck } from "../../contexts/checkContext";
+import { CheckContextType } from "../../@types/check";
 
 type Coordinates = {
   lat: number;
@@ -95,24 +105,35 @@ const LocationStyles = styled.div`
 `;
 
 type Props = {
-  step: number
-}
+  step: number;
+};
 
-const Location = ({step}: Props) => {
+const Location = ({ step }: Props) => {
   const dispatch = useAppDispatch();
 
-  useEffect(() => {
-    dispatch(setStep(step));
-  }, [step, dispatch]);
   
+
   let infowindow: any = null;
   let geocoder: any;
   const [markers, setMarkers] = useState<any>([]);
   const [map, setMap] = useState<any>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
   const [libraries] = useState<any>(["places"]);
   const [currentPosition, setCurrentPosition] =
     useState<Coordinates>(defaultCenter);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const { room_id } = useParams();
+  const { data, setData } = useData();
+  const { setCheck } = useCheck() as CheckContextType;
+
+  useEffect(() => {
+    dispatch(setStep(step));
+    setData({
+      nextPage: `/become-a-host/${room_id}/floor-plan`,
+      backPage: `/become-a-host/${room_id}/structure`,
+    });
+    setCheck(false);
+  }, [step, dispatch]);
+
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: "AIzaSyDzzi_VBcf2Oef6LTViLU767UPNHlnIze4",
     libraries,
@@ -137,20 +158,50 @@ const Location = ({step}: Props) => {
     }
   };
 
-  const handleGetPosition = (event: ChangeEvent) => {
-    let { value } = event.target as HTMLInputElement;
-
+  const handleGetPosition = (event: KeyboardEvent | ChangeEvent) => {
+    let { target } = event as ChangeEvent<HTMLInputElement>;
+    let { keyCode } = event as KeyboardEvent<HTMLInputElement>;
     let request = {
-      query: value,
+      query: target.value,
       fields: ["name", "geometry"],
     };
-    let service = new google.maps.places.PlacesService(map);
-    service.findPlaceFromQuery(request, (results: any, status) => {
-      if (status === google.maps.places.PlacesServiceStatus.OK && results) {
-        clearMarker();
-        createMarker(results[0]);
+    if (event.type === "keydown") {
+      if (keyCode === 13) {
+        let service = new google.maps.places.PlacesService(map);
+        service.findPlaceFromQuery(request, (results: any, status) => {
+          if (status === "OK") {
+            setCheck(true);
+          } else {
+            setCheck(false);
+          }
+          clearMarker();
+          if (status === google.maps.places.PlacesServiceStatus.OK && results) {
+            setData({
+              ...data,
+              address: target.value,
+            });
+            createMarker(results[0]);
+          }
+        });
       }
-    });
+    } else {
+      let service = new google.maps.places.PlacesService(map);
+      service.findPlaceFromQuery(request, (results: any, status) => {
+        if (status === "OK") {
+          setCheck(true);
+        } else {
+          setCheck(false);
+        }
+        clearMarker();
+        if (status === google.maps.places.PlacesServiceStatus.OK && results) {
+          setData({
+            ...data,
+            address: target.value,
+          });
+          createMarker(results[0]);
+        }
+      });
+    }
   };
 
   const locationInit = (position: any) => {
@@ -174,7 +225,12 @@ const Location = ({step}: Props) => {
             map: map,
           });
           setMarkers([...markers, marker]);
+          setCheck(true);
           map.panTo(currentPosition);
+          setData({
+            ...data,
+            address: response.results[0].formatted_address,
+          });
           inputRef.current!.value = response.results[0].formatted_address;
           infowindow?.open(map, marker);
         } else {
@@ -217,6 +273,7 @@ const Location = ({step}: Props) => {
                 placeholder="Nhập địa chỉ của bạn"
                 id="search-location"
                 onBlur={(event) => handleGetPosition(event)}
+                onKeyDown={(event) => handleGetPosition(event)}
                 ref={inputRef}
               />
               <button

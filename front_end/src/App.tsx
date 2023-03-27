@@ -18,6 +18,7 @@ import Title from "./modules/Host/Title";
 import Description from "./modules/Host/Description";
 import Price from "./modules/Host/Price";
 import Receipt from "./modules/Host/Receipt";
+import Overview from "./modules/Host/Overview";
 
 function App() {
   const { account } = useAuthentication() as AuthContextType;
@@ -46,6 +47,10 @@ function App() {
           >
             {account ? (
               <>
+              <Route
+                path=""
+                element={<Overview step={1}></Overview>}
+              ></Route>
                 <Route
                   path="about-your-place"
                   element={
@@ -115,6 +120,7 @@ function App() {
               </>
             ) : null}
           </Route>
+          <Route path="/notfound" element={<NotFoundPage></NotFoundPage>}></Route>
           <Route path="*" element={<NotFoundPage></NotFoundPage>}></Route>
         </Routes>
       </Suspense>

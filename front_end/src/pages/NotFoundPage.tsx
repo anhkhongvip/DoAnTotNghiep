@@ -58,7 +58,7 @@ const NotFoundPage = () => {
           Vì vậy hay kiểm tra lại?
         </p>
         <button onClick={() => navigate("/")} className="back">
-          Quay lại trang trước đó
+          Quay lại trang chủ
         </button>
       </div>
     </NotFoundPageStyles>

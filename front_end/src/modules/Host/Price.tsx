@@ -4,6 +4,8 @@ import { useCheck } from "../../contexts/checkContext";
 import { CheckContextType } from "../../@types/check";
 import { useAppDispatch } from "../../app/hooks";
 import { setStep } from "../../features/room/roomSlice";
+import { useData } from "../../pages/layout/Host/HostLayout";
+import { useParams } from "react-router-dom";
 const PriceStyles = styled.div`
   .price-page {
     max-width: 60rem;
@@ -98,29 +100,32 @@ const PriceStyles = styled.div`
   }
 `;
 type Props = {
-  step: number
-}
+  step: number;
+};
 
-const Price = ({step}: Props) => {
+const Price = ({ step }: Props) => {
   const dispatch = useAppDispatch();
-
-  useEffect(() => {
-    dispatch(setStep(step));
-  }, [step, dispatch]);
-  
+  const { room_id } = useParams();
+  const { data, setData } = useData();
   const [price, setPrice] = useState<number>(150000);
   const { check, setCheck } = useCheck() as CheckContextType;
   const inputRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    dispatch(setStep(step));
+  }, [step, dispatch]);
 
   useEffect(() => {
-    if(price > 50000000 || price < 100000) {
+    if (price > 50000000 || price < 100000) {
       setCheck(false);
-    }
-    else {
+    } else {
+      setData({
+        price,
+        nextPage: `/become-a-host/${room_id}/receipt`,
+        backPage: `/become-a-host/${room_id}/finish-setup`,
+      });
       setCheck(true);
     }
-  }, [price])
-
+  }, [price]);
 
   const handleChange = (event: ChangeEvent) => {
     const { value } = event.target as HTMLInputElement;
@@ -164,18 +169,12 @@ const Price = ({step}: Props) => {
         <div className="price-content text-center">
           <div className="price-group">
             <button
-              className={`btn-down ${price < 100000 ? "not-allow" : ""}`}
+              className={`btn-down ${price <= 100000 ? "not-allow" : ""}`}
               onClick={() => handleClick("down")}
             >
               <i className="fa-regular fa-minus"></i>
             </button>
-            <div
-              className={`input-price ${
-                (price > 50000000 || price < 100000)
-                  ? "not-allow"
-                  : ""
-              }`}
-            >
+            <div className={`input-price ${!check ? "not-allow" : ""}`}>
               <input
                 type="text"
                 autoComplete="off"
@@ -188,14 +187,14 @@ const Price = ({step}: Props) => {
               />
             </div>
             <button
-              className={`btn-up ${price > 50000000 ? "not-allow" : ""}`}
+              className={`btn-up ${price >= 50000000 ? "not-allow" : ""}`}
               onClick={() => handleClick("up")}
             >
               <i className="fa-regular fa-plus"></i>
             </button>
           </div>
           <div className="per-day">mỗi đêm</div>
-          {(price > 50000000 || price < 100000) && price !== 0 ? (
+          {!check && price !== 0 ? (
             <div className="error-message-entered">
               <svg
                 viewBox="0 0 16 16"

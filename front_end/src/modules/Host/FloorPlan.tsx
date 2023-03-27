@@ -2,6 +2,10 @@ import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { useAppDispatch } from "../../app/hooks";
 import { setStep } from "../../features/room/roomSlice";
+import { useParams } from "react-router-dom";
+import { useData } from "../../pages/layout/Host/HostLayout";
+import { useCheck } from "../../contexts/checkContext";
+import { CheckContextType } from "../../@types/check";
 const FloorPlanStyles = styled.div`
   .title {
     display: inline-block;
@@ -71,36 +75,37 @@ const FloorPlanStyles = styled.div`
   }
 `;
 
-interface IitemAmount {
-  max_passenger: number;
-  bed: number;
-  bathroom: number;
-}
 
 type NameObject = "max_passenger" | "bed" | "bathroom";
 
 type Props = {
-  step: number
-}
+  step: number;
+};
 
-const FloorPlan = ({step}: Props) => {
+const FloorPlan = ({ step }: Props) => {
   const dispatch = useAppDispatch();
+  const { room_id } = useParams();
+  const { data, setData } = useData();
+  const { setCheck } = useCheck() as CheckContextType;
 
   useEffect(() => {
+    setData({
+      max_passenger: 4,
+      bed: 1,
+      bathroom: 1,
+      nextPage: `/become-a-host/${room_id}/stand-out`,
+      backPage: `/become-a-host/${room_id}/location`,
+    });
+    setCheck(true);
     dispatch(setStep(step));
   }, [step, dispatch]);
 
-  const [itemAmount, setItemAmount] = useState<IitemAmount>({
-    max_passenger: 4,
-    bed: 1,
-    bathroom: 1,
-  });
   const handleClickUp = (name: NameObject) => {
-    setItemAmount({ ...itemAmount, [name]: itemAmount[name] + 1 });
+    setData({ ...data, [name]: data[name] + 1 });
   };
   const handleClickDown = (name: NameObject) => {
-    if (itemAmount[name] > 1) {
-      setItemAmount({ ...itemAmount, [name]: itemAmount[name] - 1 });
+    if (data[name] > 1) {
+      setData({ ...data, [name]: data[name] - 1 });
     }
   };
   return (
@@ -118,7 +123,7 @@ const FloorPlan = ({step}: Props) => {
           <div className="item-group">
             <div className="item-title">Khách</div>
             <div className="item-count">
-              {itemAmount.max_passenger > 1 && (
+              {data?.max_passenger > 1 && (
                 <button
                   className="btn-down"
                   onClick={() => handleClickDown("max_passenger")}
@@ -127,7 +132,7 @@ const FloorPlan = ({step}: Props) => {
                 </button>
               )}
 
-              <span className="amount">{itemAmount.max_passenger}</span>
+              <span className="amount">{data?.max_passenger}</span>
               <button
                 className="btn-up"
                 onClick={() => handleClickUp("max_passenger")}
@@ -139,7 +144,7 @@ const FloorPlan = ({step}: Props) => {
           <div className="item-group">
             <div className="item-title">Giường</div>
             <div className="item-count">
-              {itemAmount.bed > 1 && (
+              {data?.bed > 1 && (
                 <button
                   className="btn-down"
                   onClick={() => handleClickDown("bed")}
@@ -148,7 +153,7 @@ const FloorPlan = ({step}: Props) => {
                 </button>
               )}
 
-              <span className="amount">{itemAmount.bed}</span>
+              <span className="amount">{data?.bed}</span>
               <button className="btn-up" onClick={() => handleClickUp("bed")}>
                 <i className="fa-regular fa-plus"></i>
               </button>
@@ -157,7 +162,7 @@ const FloorPlan = ({step}: Props) => {
           <div className="item-group">
             <div className="item-title">Phòng tắm</div>
             <div className="item-count">
-              {itemAmount.bathroom > 1 && (
+              {data?.bathroom > 1 && (
                 <button
                   className="btn-down"
                   onClick={() => handleClickDown("bathroom")}
@@ -166,7 +171,7 @@ const FloorPlan = ({step}: Props) => {
                 </button>
               )}
 
-              <span className="amount">{itemAmount.bathroom}</span>
+              <span className="amount">{data?.bathroom}</span>
               <button
                 className="btn-up"
                 onClick={() => handleClickUp("bathroom")}

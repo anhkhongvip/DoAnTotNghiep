@@ -1,4 +1,4 @@
-import { Account } from './Account';
+import { Account } from "./Account";
 import { Entity, Column, PrimaryGeneratedColumn, ManyToOne } from "typeorm";
 
 @Entity("contracts")
@@ -6,10 +6,10 @@ export class Contract {
   @PrimaryGeneratedColumn({ type: "int" })
   public id: number;
 
-  @Column({ type: "date"})
+  @Column({ type: "date" })
   public time_start: string;
 
-  @Column({ type: "date"})
+  @Column({ type: "date" })
   public time_end: string;
 
   @Column({ type: "int" })
@@ -18,9 +18,9 @@ export class Contract {
   @Column({ type: "int", default: 0 })
   public total_money: number;
 
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' }) // Recommended
+  @Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP" }) // Recommended
   created_at: Date;
 
-  @ManyToOne(() => Account, (account) => account.contracts)
-  account: Account;
+  @Column({ type: "int" })
+  public account_id: number;
 }

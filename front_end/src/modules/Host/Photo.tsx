@@ -11,6 +11,8 @@ import {
   uploadImageAsync,
 } from "../../services/image.service";
 import { setStep } from "../../features/room/roomSlice";
+import { useData } from "../../pages/layout/Host/HostLayout";
+import { useParams } from "react-router-dom";
 const PhotoStyles = styled.div`
   .title {
     display: inline-block;
@@ -145,20 +147,29 @@ const Photo = ({ step }: Props) => {
     publicId: null,
     url: null,
   });
+  const { room_id } = useParams();
+  const { data, setData } = useData();
   const { setCheck } = useCheck() as CheckContextType;
   const [imageList, setImageList] = useState<Array<Image>>([]);
   const [nameLoading, setNameLoading] = useState<string>("");
+
   const dispatch = useAppDispatch();
   useEffect(() => {
     dispatch(setStep(step));
+    setData({
+      nextPage: `/become-a-host/${room_id}/title`,
+      backPage: `/become-a-host/${room_id}/amenities`,
+    });
+    setCheck(false);
   }, [step, dispatch]);
   const imageSelector = useAppSelector(selectImage);
 
   useEffect(() => {
     if (bannerThumb.url && imageList.length === 3) {
-      setCheck(false);
-    } else {
+      setData({...data, image_main: bannerThumb.url})
       setCheck(true);
+    } else {
+      setCheck(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bannerThumb, imageList]);

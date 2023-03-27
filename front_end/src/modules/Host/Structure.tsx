@@ -1,7 +1,16 @@
-import React, { useEffect } from "react";
+import React, { useEffect, ChangeEvent } from "react";
 import styled from "styled-components";
-import { useAppDispatch } from "../../app/hooks";
+import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import { setStep } from "../../features/room/roomSlice";
+import { useParams } from "react-router-dom";
+import { useData } from "../../pages/layout/Host/HostLayout";
+import { useCheck } from "../../contexts/checkContext";
+import { CheckContextType } from "../../@types/check";
+import { getCategoriesAsync } from "../../services/category.service";
+import {
+  ICategory,
+  selectCategory,
+} from "../../features/category/categorySlice";
 const StructureStyles = styled.div`
   .structure {
     &-title {
@@ -58,32 +67,6 @@ const StructureStyles = styled.div`
           transform: translate(2rem, 2rem);
           color: white;
         }
-        &-check {
-          position: absolute;
-          z-index: 2;
-          top: 0;
-          right: 0;
-          transform: translate(-2rem, 2rem);
-          width: 3rem;
-          height: 3rem;
-          border-radius: 0.8rem;
-          background-color: white;
-          &:before {
-            transition: all 0.4s ease-in-out;
-            content: "";
-            position: absolute;
-            z-index: 3;
-            top: 0;
-            right: 0;
-            width: 2.7rem;
-            height: 1.5rem;
-            transform: rotate(-45deg) translate(-0.5rem, 0.2rem);
-            opacity: 0;
-            visibility: hidden;
-            border-left: 0.5rem solid #78e08f;
-            border-bottom: 0.5rem solid #78e08f;
-          }
-        }
       }
     }
   }
@@ -95,9 +78,24 @@ type Props = {
 
 const Structure = ({ step }: Props) => {
   const dispatch = useAppDispatch();
+  const { room_id } = useParams();
+  const { data, setData } = useData();
+  const { setCheck } = useCheck() as CheckContextType;
+  const categorySelector = useAppSelector(selectCategory);
+  const handleChange = (event: ChangeEvent) => {
+    let { value } = event.target as HTMLInputElement;
+    setData({ ...data, categoryId: value });
+    setCheck(true);
+  };
 
   useEffect(() => {
+    setCheck(false);
     dispatch(setStep(step));
+    dispatch(getCategoriesAsync());
+    setData({
+      nextPage: `/become-a-host/${room_id}/location`,
+      backPage: `/become-a-host/${room_id}/about-your-place`,
+    });
   }, [step, dispatch]);
   return (
     <StructureStyles>
@@ -106,42 +104,29 @@ const Structure = ({ step }: Props) => {
           Điều nào sau đây mô tả chính xác nhất về chỗ ở của bạn?
         </h2>
         <div className="structure-content">
-          <div className="structure-group">
-            <input
-              id="category-demo"
-              type="radio"
-              name="categories"
-              className="radio-input"
-              value=""
-            />
-            <label htmlFor="category-demo" className="category-item">
-              <img
-                src="https://images.unsplash.com/photo-1518733057094-95b53143d2a7?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=365&q=80"
-                alt="img-categories"
-              />
+          {categorySelector &&
+            categorySelector.categories.map(
+              (item: ICategory, index: number) => (
+                <div className="structure-group" key={index}>
+                  <input
+                    id={`category-${item.id}`}
+                    type="radio"
+                    name="categories"
+                    className="radio-input"
+                    value={item.id}
+                    onChange={handleChange}
+                  />
+                  <label
+                    htmlFor={`category-${item.id}`}
+                    className="category-item"
+                  >
+                    <img src={item.image} alt="img-categories" />
 
-              <h3 className="category-item-title">Khách sạn</h3>
-              <div className="category-item-check"></div>
-            </label>
-          </div>
-          <div className="structure-group">
-            <input
-              id="category-1"
-              type="radio"
-              name="categories"
-              className="radio-input"
-              value=""
-            />
-            <label htmlFor="category-1" className="category-item">
-              <img
-                src="https://images.unsplash.com/photo-1518733057094-95b53143d2a7?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=365&q=80"
-                alt="img-categories"
-              />
-
-              <h3 className="category-item-title">Khách sạn</h3>
-              <div className="category-item-check"></div>
-            </label>
-          </div>
+                    <h3 className="category-item-title">{item.name}</h3>
+                  </label>
+                </div>
+              )
+            )}
         </div>
       </div>
     </StructureStyles>

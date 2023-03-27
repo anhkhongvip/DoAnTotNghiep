@@ -14,7 +14,4 @@ export class Category {
 
   @Column({ type: "timestamp", default: () => 'CURRENT_TIMESTAMP'}) // Recommended
   created_at: Date;
-
-  @OneToMany(() => Home, (home) => home.category)
-  homes: Home[];
 }

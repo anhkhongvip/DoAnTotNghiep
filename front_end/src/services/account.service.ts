@@ -6,7 +6,7 @@ const getAccountAsync = createAsyncThunk(
   async (token: string) => {
     try {
       const res: any = await axios.get(
-        `${process.env.REACT_APP_URL}/api/accounts`,
+        `${process.env.REACT_APP_URL}/api/account`,
         {
           headers: {
             authorization: token,
@@ -26,7 +26,7 @@ const updateAccountAsync = createAsyncThunk(
     try {
       const { token, ...newData } = data;
       const res: any = await axios.put(
-        `${process.env.REACT_APP_URL}/api/accounts`,
+        `${process.env.REACT_APP_URL}/api/account`,
         newData,
         {
           headers: {

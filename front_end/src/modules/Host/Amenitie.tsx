@@ -2,6 +2,10 @@ import React, { useEffect } from "react";
 import styled from "styled-components";
 import { setStep } from "../../features/room/roomSlice";
 import { useAppDispatch } from "../../app/hooks";
+import { useParams } from "react-router-dom";
+import { useData } from "../../pages/layout/Host/HostLayout";
+import { useCheck } from "../../contexts/checkContext";
+import { CheckContextType } from "../../@types/check";
 const AmenitieStyles = styled.div`
   .amenitie {
     max-width: 60rem;
@@ -52,7 +56,7 @@ const AmenitieStyles = styled.div`
       box-shadow: 0 0 0 2px #000000;
     }
     &:active {
-        transform:  scale(0.96);
+      transform: scale(0.96);
     }
     & i {
       font-size: 2.5rem;
@@ -65,14 +69,22 @@ const AmenitieStyles = styled.div`
   }
 `;
 type Props = {
-  step: number
-}
+  step: number;
+};
 
-const Amenitie = ({step}: Props) => {
+const Amenitie = ({ step }: Props) => {
   const dispatch = useAppDispatch();
+  const { room_id } = useParams();
+  const { setData } = useData();
+  const { setCheck } = useCheck() as CheckContextType;
 
   useEffect(() => {
     dispatch(setStep(step));
+    setData({
+      nextPage: `/become-a-host/${room_id}/photos`,
+      backPage: `/become-a-host/${room_id}/stand-out`,
+    });
+    setCheck(false);
   }, [step, dispatch]);
   return (
     <AmenitieStyles>

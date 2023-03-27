@@ -10,23 +10,23 @@ export class Home {
   @PrimaryGeneratedColumn({ type: "int" })
   public id: number;
 
-  @Column({ type: "varchar", length: 200 })
-  public title: string;
+  @Column({ type: "varchar", length: 200, nullable: true})
+  public title: string | null;
 
-  @Column({ type: "int" })
+  @Column({ type: "int", default: 100000 })
   public price: number;
 
-  @Column({ type: "varchar" })
-  public address: string;
+  @Column({ type: "varchar", nullable: true})
+  public address: string | null;
 
-  @Column({ type: "int" })
-  public max_passenger: number;
+  @Column({ type: "int", nullable: true})
+  public max_passenger: number | null;
 
-  @Column({ type: "int", default: 0 })
-  public bed: number;
+  @Column({ type: "int", nullable: true })
+  public bed: number | null;
 
-  @Column({ type: "int", default: 0 })
-  public bathroom: number;
+  @Column({ type: "int", nullable: true })
+  public bathroom: number | null;
 
   @Column({
     type: "varchar",
@@ -35,32 +35,26 @@ export class Home {
   })
   public image_main: string | null;
 
-  @Column({ type: "int", default: 1 }) // 1: Đã đăng - 2: Đã hủy - 3: Đang tiến hành
+  @Column({ type: "int", default: 1})
+  public stepProgress: number;
+
+  @Column({ type: "int", default: 3 }) // 1: Đã đăng - 2: Đã hủy - 3: Đang tiến hành
   public status: string;
 
-  @Column({ type: "varchar", length: 200, nullable: true })
-  public description: string | null;
+  @Column({ type: "varchar", length: 200, default: '' })
+  public description: string;
 
-  @Column({ type: "int" })
+  @Column({ type: "int", nullable: true })
   public rate_star: number;
 
   @Column({ type: "timestamp", default: () => 'CURRENT_TIMESTAMP' }) // Recommended
-  created_at: Date;
+  public created_at: Date;
 
-  @OneToMany(() => Home_Image, (home_image) => home_image.home)
-  home_images: Home_Image[];
+  @Column({ type: "int", nullable: true }) //
+  public category_id: number;
 
-  @OneToMany(() => Home_Service, (home_service) => home_service.home)
-  home_services: Home_Service[];
+  @Column({ type: "int" })
+  public account_id: number;
 
-  @OneToMany(() => Home_Day, (home_day) => home_day.home)
-  home_days: Home_Day[];
-
-  @ManyToOne(() => Category, (category) => category.homes)
-  category: Category;
-
-  @ManyToOne(() => Account, (account) => account.homes)
-  account: Account;
-
- 
+  
 }

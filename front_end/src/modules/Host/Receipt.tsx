@@ -6,6 +6,8 @@ import { Modal } from "../../components/modal";
 import Preview from "./Preview";
 import { setStep } from "../../features/room/roomSlice";
 import { useAppDispatch } from "../../app/hooks";
+import { useData } from "../../pages/layout/Host/HostLayout";
+import { useParams } from "react-router-dom";
 
 const ReceiptStyles = styled.div`
   .title {
@@ -87,21 +89,24 @@ type Props = {
 }
 
 const Receipt = ({step}: Props) => {
-  const dispatch = useAppDispatch();
-
-  useEffect(() => {
-    dispatch(setStep(step));
-  }, [step, dispatch]);
-  
   const { setCheck } = useCheck() as CheckContextType;
   const [toggle, setToggle] = useState<boolean>(false);
+  const dispatch = useAppDispatch();
+  const { setData } = useData();
+  const { room_id } = useParams();
+  useEffect(() => {
+    dispatch(setStep(step));
+    setCheck(true)
+    setData({
+      nextPage: 'end',
+      backPage: `/become-a-host/${room_id}/price`,
+    });
+  }, [step, dispatch]);
+  
   const closeModal = (event: React.MouseEvent<HTMLElement>) => {
     event.stopPropagation();
     setToggle(false);
   };
-  useEffect(() => {
-    setCheck(true);
-  }, []);
 
   return (
     <ReceiptStyles>

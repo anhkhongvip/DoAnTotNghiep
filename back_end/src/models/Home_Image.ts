@@ -12,6 +12,6 @@ export class Home_Image {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' }) // Recommended
   created_at: Date;
 
-  @ManyToOne(() => Home, (home) => home.home_images)
-  home: Home;
+  @Column({ type: "int"})
+  public home_id: number;
 }

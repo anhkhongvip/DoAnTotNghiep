@@ -6,8 +6,9 @@ import { useCheck } from "../../contexts/checkContext";
 import { useData } from "../../pages/layout/Host/HostLayout";
 import { setStep } from "../../features/room/roomSlice";
 import { useAppDispatch } from "../../app/hooks";
+import { useParams } from "react-router-dom";
 const DescriptionStyles = styled.div`
-.title-page {
+  .title-page {
     max-width: 60rem;
     margin-top: 7rem;
     .title {
@@ -36,27 +37,34 @@ const DescriptionStyles = styled.div`
 `;
 
 type Props = {
-  step: number
-}
+  step: number;
+};
 
-const Description = ({step}: Props) => {
+const Description = ({ step }: Props) => {
   const dispatch = useAppDispatch();
-
+  const [content, setContent] = useState<string>(
+    "Bạn sẽ có một khoảng thời gian tuyệt vời tại nơi ở thoải mái."
+  );
+  const { check, setCheck } = useCheck() as CheckContextType;
+  const { setData } = useData();
+  const { room_id } = useParams();
   useEffect(() => {
     dispatch(setStep(step));
   }, [step, dispatch]);
 
-  const [content, setContent] = useState<string>("Bạn sẽ có một khoảng thời gian tuyệt vời tại nơi ở thoải mái.");
-  const { check, setCheck } = useCheck() as CheckContextType;
-  const { setData } = useData();
   useEffect(() => {
     if (content.length > 500 || content.length === 0) {
       setCheck(false);
     } else {
       setCheck(true);
-      setData({ description: content });
+      setData({
+        nextPage: `/become-a-host/${room_id}/finish-setup`,
+        backPage: `/become-a-host/${room_id}/title`,
+        description: content,
+      });
     }
   }, [content]);
+
   return (
     <DescriptionStyles>
       <div className="container-sm title-page">

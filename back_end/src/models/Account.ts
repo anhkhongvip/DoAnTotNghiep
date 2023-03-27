@@ -38,10 +38,4 @@ export class Account {
 
   @Column({ type: "timestamp", default: () => 'CURRENT_TIMESTAMP'}) // Recommended
   created_at: string;
-
-  @OneToMany(() => Home, (home) => home.account)
-  homes: Home[];
-
-  @OneToMany(() => Contract, (contract) => contract.account)
-  contracts: Contract[];
 }
