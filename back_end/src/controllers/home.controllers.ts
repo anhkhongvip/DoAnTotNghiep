@@ -1,3 +1,5 @@
+import { Home_Image } from "./../models/Home_Image";
+import { Home_Service } from "./../models/Home_Service";
 import { Request, Response, NextFunction } from "express";
 import { AppDataSource } from "../configs/data-source";
 import { Home } from "./../models/Home";
@@ -36,8 +38,6 @@ class HomeController {
   };
   createHome = async (req: Request, res: Response) => {
     try {
-      console.log(req.userId);
-      console.log(req.body);
       let home = await this.homeRepository.create({
         account_id: req.userId,
       });
@@ -62,19 +62,188 @@ class HomeController {
   updateHome = async (req: Request, res: Response) => {
     try {
       const home = await this.homeRepository.findOneBy({
-        id: req.params.id,
+        id: req.params.room_id,
+        account_id: req.userId,
       });
-      this.homeRepository.merge(home, req.body);
-      const results = await this.homeRepository(Home).save(home);
+      if (home) {
+        if (req.body.listServiceSelect) {
+          let values: any = [];
+          await AppDataSource.getRepository(Home_Service)
+            .createQueryBuilder()
+            .delete()
+            .from(Home_Service)
+            .where("home_id = :home_id", { home_id: req.params.room_id })
+            .execute();
+          values = req.body.listServiceSelect.map((item) => {
+            return { service_id: item, home_id: req.params.room_id };
+          });
 
-      return res.status(200).json({
+          await AppDataSource.getRepository(Home_Service)
+            .createQueryBuilder()
+            .insert()
+            .into(Home_Service)
+            .values(values)
+            .execute();
+          return res.status(200).json({
+            data: {
+              status: "success",
+              message: "Cập nhật nhà thành công",
+            },
+          });
+        } else if (req.body.bannerThumb && req.body.imageList) {
+          let { bannerThumb, imageList } = req.body;
+          let { url: image_main, public_id } = bannerThumb;
+          let values: any = [];
+          await AppDataSource.getRepository(Home_Image)
+            .createQueryBuilder()
+            .delete()
+            .from(Home_Image)
+            .where("home_id = :home_id", { home_id: req.params.room_id })
+            .execute();
+
+          values = imageList.map((item: any) => {
+            return {
+              url: item.url,
+              public_id: item.public_id,
+              home_id: req.params.room_id,
+            };
+          });
+
+          this.homeRepository.merge(home, {image_main, public_id});
+          await this.homeRepository.save(home);
+
+          await AppDataSource.getRepository(Home_Image)
+            .createQueryBuilder()
+            .insert()
+            .into(Home_Image)
+            .values(values)
+            .execute();
+
+          return res.status(200).json({
+            data: {
+              status: "success",
+              message: "Cập nhật nhà thành công",
+            },
+          });
+        } else {
+          this.homeRepository.merge(home, req.body);
+          await this.homeRepository.save(home);
+          return res.status(200).json({
+            data: {
+              status: "success",
+              message: "Cập nhật nhà thành công",
+            },
+          });
+        }
+      } else {
+        res.status(400).json({
+          data: {
+            message: "Cập nhật không thành công",
+            error: "Fobbiden",
+          },
+        });
+      }
+    } catch (error) {
+      console.log(error);
+
+      res.status(400).json({
         data: {
-          status: "success",
-          message: "Cập nhật nhà thành công",
-          results,
+          message: "Cập nhật không thành công",
+          error,
         },
       });
+    }
+  };
+
+  findHomeById = async (req: Request, res: Response) => {
+    try {
+      const home = await this.homeRepository.findOneBy({
+        id: req.params.room_id,
+      });
+      if (home) {
+        return res.status(200).json({
+          data: {
+            status: "success",
+            message: "Find successfully",
+            home,
+          },
+        });
+      } else {
+        res.status(200).json({
+          data: {
+            status: "success",
+            message: "Not found",
+            home: [],
+          },
+        });
+      }
     } catch (error) {
+      console.log(error);
+      res.status(400).json({
+        data: {
+          message: "Cập nhật không thành công",
+          error,
+        },
+      });
+    }
+  };
+
+  findServiceByHomeId = async (req: Request, res: Response) => {
+    try {
+      const service = await AppDataSource.getRepository(Home_Service).findBy({
+        home_id: Number(req.params.room_id),
+      });
+      if (service) {
+        return res.status(200).json({
+          data: {
+            status: "success",
+            message: "Find successfully",
+            service,
+          },
+        });
+      } else {
+        res.status(200).json({
+          data: {
+            status: "success",
+            message: "Not found",
+            service: [],
+          },
+        });
+      }
+    } catch (error) {
+      console.log(error);
+      res.status(400).json({
+        data: {
+          message: "Cập nhật không thành công",
+          error,
+        },
+      });
+    }
+  };
+  findImageByHomeId = async (req: Request, res: Response) => {
+    try {
+      const images = await AppDataSource.getRepository(Home_Image).findBy({
+        home_id: Number(req.params.room_id),
+      });
+      if (images) {
+        return res.status(200).json({
+          data: {
+            status: "success",
+            message: "Find successfully",
+            images,
+          },
+        });
+      } else {
+        res.status(200).json({
+          data: {
+            status: "success",
+            message: "Not found",
+            images: [],
+          },
+        });
+      }
+    } catch (error) {
+      console.log(error);
       res.status(400).json({
         data: {
           message: "Cập nhật không thành công",

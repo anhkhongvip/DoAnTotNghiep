@@ -9,6 +9,13 @@ export class Home_Image {
   @Column({ type: "varchar", length: 200})
   public url: string;
 
+  @Column({
+    type: "varchar",
+    length: 200,
+    nullable: true,
+  })
+  public public_id: string | null;
+
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' }) // Recommended
   created_at: Date;
 

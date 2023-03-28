@@ -11,6 +11,7 @@ import {
   ICategory,
   selectCategory,
 } from "../../features/category/categorySlice";
+import { findRoomByIdAsync } from "../../services/room.service";
 const StructureStyles = styled.div`
   .structure {
     &-title {
@@ -84,7 +85,7 @@ const Structure = ({ step }: Props) => {
   const categorySelector = useAppSelector(selectCategory);
   const handleChange = (event: ChangeEvent) => {
     let { value } = event.target as HTMLInputElement;
-    setData({ ...data, categoryId: value });
+    setData({ ...data, category_id: value });
     setCheck(true);
   };
 
@@ -95,6 +96,18 @@ const Structure = ({ step }: Props) => {
     setData({
       nextPage: `/become-a-host/${room_id}/location`,
       backPage: `/become-a-host/${room_id}/about-your-place`,
+    });
+    dispatch(findRoomByIdAsync(room_id!)).then((res) => {
+      if(res.payload.data) {
+        const {category_id} = res.payload.data.home;
+        if(category_id) {
+          (document.querySelector(`#category-${category_id}`)! as HTMLInputElement).checked = true;
+          setCheck(true);
+        }
+      }
+    }).catch((err) => {
+      console.log(err);
+      
     });
   }, [step, dispatch]);
   return (

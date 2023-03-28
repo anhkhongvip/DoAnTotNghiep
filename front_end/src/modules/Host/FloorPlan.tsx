@@ -6,6 +6,7 @@ import { useParams } from "react-router-dom";
 import { useData } from "../../pages/layout/Host/HostLayout";
 import { useCheck } from "../../contexts/checkContext";
 import { CheckContextType } from "../../@types/check";
+import { findRoomByIdAsync } from "../../services/room.service";
 const FloorPlanStyles = styled.div`
   .title {
     display: inline-block;
@@ -75,7 +76,6 @@ const FloorPlanStyles = styled.div`
   }
 `;
 
-
 type NameObject = "max_passenger" | "bed" | "bathroom";
 
 type Props = {
@@ -89,13 +89,33 @@ const FloorPlan = ({ step }: Props) => {
   const { setCheck } = useCheck() as CheckContextType;
 
   useEffect(() => {
-    setData({
-      max_passenger: 4,
-      bed: 1,
-      bathroom: 1,
-      nextPage: `/become-a-host/${room_id}/stand-out`,
-      backPage: `/become-a-host/${room_id}/location`,
-    });
+    dispatch(findRoomByIdAsync(room_id!))
+      .then((res) => {
+        if (res.payload.data) {
+          const { max_passenger, bathroom, bed } = res.payload.data.home;
+          if (max_passenger && bathroom && bed) {
+            setData({
+              max_passenger,
+              bed,
+              bathroom,
+              nextPage: `/become-a-host/${room_id}/stand-out`,
+              backPage: `/become-a-host/${room_id}/location`,
+            });
+          } else {
+            setData({
+              max_passenger: 4,
+              bed: 1,
+              bathroom: 1,
+              nextPage: `/become-a-host/${room_id}/stand-out`,
+              backPage: `/become-a-host/${room_id}/location`,
+            });
+          }
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+
     setCheck(true);
     dispatch(setStep(step));
   }, [step, dispatch]);

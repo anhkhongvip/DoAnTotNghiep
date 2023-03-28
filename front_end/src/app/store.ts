@@ -5,6 +5,7 @@ import accountReducer from "../features/account/accountSlice";
 import categoryReducer from "../features/category/categorySlice";
 import logger from "redux-logger";
 import roomReducer from "../features/room/roomSlice";
+import amenitieReducer from "../features/amenitie/amenitieSlice";
 export const store = configureStore({
   reducer: {
     counter: counterReducer,
@@ -12,6 +13,7 @@ export const store = configureStore({
     account: accountReducer,
     room: roomReducer,
     category: categoryReducer,
+    amenitie: amenitieReducer,
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware({
     serializableCheck: false,

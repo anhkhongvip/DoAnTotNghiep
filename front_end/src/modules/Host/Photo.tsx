@@ -13,6 +13,10 @@ import {
 import { setStep } from "../../features/room/roomSlice";
 import { useData } from "../../pages/layout/Host/HostLayout";
 import { useParams } from "react-router-dom";
+import {
+  findImageByHomeId,
+  findRoomByIdAsync,
+} from "../../services/room.service";
 const PhotoStyles = styled.div`
   .title {
     display: inline-block;
@@ -135,7 +139,7 @@ const PhotoStyles = styled.div`
 `;
 
 interface Image {
-  publicId: string | null;
+  public_id: string | null;
   url: string | null;
 }
 type Props = {
@@ -144,7 +148,7 @@ type Props = {
 
 const Photo = ({ step }: Props) => {
   const [bannerThumb, setBannerThumb] = useState<Image>({
-    publicId: null,
+    public_id: null,
     url: null,
   });
   const { room_id } = useParams();
@@ -156,6 +160,29 @@ const Photo = ({ step }: Props) => {
   const dispatch = useAppDispatch();
   useEffect(() => {
     dispatch(setStep(step));
+    dispatch(findRoomByIdAsync(room_id!))
+      .then((res) => {
+        let { home } = res.payload.data;
+        setBannerThumb({ public_id: home.public_id, url: home.image_main });
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+    dispatch(findImageByHomeId(room_id!))
+      .then((res) => {
+        let { images } = res.payload.data;
+        let cloneArray: Array<Image> = [];
+        images.forEach((item: any) => {
+          cloneArray = [
+            ...cloneArray,
+            { url: item.url, public_id: item.public_id },
+          ];
+        });
+        setImageList(cloneArray);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
     setData({
       nextPage: `/become-a-host/${room_id}/title`,
       backPage: `/become-a-host/${room_id}/amenities`,
@@ -166,7 +193,7 @@ const Photo = ({ step }: Props) => {
 
   useEffect(() => {
     if (bannerThumb.url && imageList.length === 3) {
-      setData({...data, image_main: bannerThumb.url})
+      setData({ ...data, bannerThumb, imageList });
       setCheck(true);
     } else {
       setCheck(false);
@@ -189,12 +216,12 @@ const Photo = ({ step }: Props) => {
           setBannerThumb({
             ...bannerThumb,
             url: data.secure_url,
-            publicId: data.public_id,
+            public_id: data.public_id,
           });
         } else {
           setImageList([
             ...imageList,
-            { url: data.secure_url, publicId: data.public_id },
+            { url: data.secure_url, public_id: data.public_id },
           ]);
         }
       }
@@ -221,12 +248,12 @@ const Photo = ({ step }: Props) => {
             if (nameUpdate === "image-main") {
               setBannerThumb({
                 url: null,
-                publicId: null,
+                public_id: null,
               });
             } else {
               const imageListClone: Array<Image> = [...imageList];
               let index = imageListClone.findIndex(
-                (item) => item.publicId === publicId
+                (item) => item.public_id === publicId
               );
               imageListClone.splice(index, 1);
               console.log(imageListClone);
@@ -292,7 +319,7 @@ const Photo = ({ step }: Props) => {
                 <button
                   className="btn btn-delete"
                   onClick={() =>
-                    deleteImage(bannerThumb.publicId!, "image-main")
+                    deleteImage(bannerThumb.public_id!, "image-main")
                   }
                 >
                   <i className="fa-regular fa-trash-can"></i>
@@ -306,7 +333,7 @@ const Photo = ({ step }: Props) => {
                 <img src={item.url!} alt="img-item" />
                 <button
                   className="btn btn-image-item btn-delete"
-                  onClick={() => deleteImage(item.publicId!, "image")}
+                  onClick={() => deleteImage(item.public_id!, "image")}
                 >
                   <i className="fa-regular fa-trash-can"></i>
                 </button>

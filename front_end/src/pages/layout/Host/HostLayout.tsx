@@ -1,10 +1,10 @@
 import React, { Fragment, useState } from "react";
-import { Outlet, useNavigate, useOutletContext } from "react-router-dom";
+import { Outlet, useNavigate, useOutletContext, useParams } from "react-router-dom";
 import styled from "styled-components";
 import Footer from "./Footer";
 import Header from "./Header";
 import { useAppDispatch } from "../../../app/hooks";
-import { createRoomAsync } from "../../../services/room.service";
+import { createRoomAsync, updateRoomAsync } from "../../../services/room.service";
 const HostLayoutStyles = styled.div`
   .header {
     position: sticky;
@@ -40,6 +40,7 @@ const HostLayout = () => {
   });
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  const {room_id} = useParams();
   function wait(time: number) {
     return new Promise((resolve) => {
       setTimeout(resolve, time);
@@ -57,6 +58,7 @@ const HostLayout = () => {
         let res: any = await dispatch(createRoomAsync({}));
         if (res.payload.data.status === "success") {
           const { id } = res.payload.data.results;
+          
           newNextPage = `/become-a-host/${id}/about-your-place`;
         }
       } catch (err) {
@@ -65,6 +67,9 @@ const HostLayout = () => {
     } else if (nextPage === "end") {
       newNextPage = "/hosting/listings";
     } else {
+      let res:any = await dispatch(updateRoomAsync({...restData, room_id}));
+      console.log(111,res);
+      
     }
     navigate(newNextPage);
   };

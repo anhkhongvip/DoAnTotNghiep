@@ -35,6 +35,14 @@ export class Home {
   })
   public image_main: string | null;
 
+  @Column({
+    type: "varchar",
+    length: 200,
+    nullable: true,
+  })
+  
+  public public_id: string | null;
+
   @Column({ type: "int", default: 1})
   public stepProgress: number;
 
