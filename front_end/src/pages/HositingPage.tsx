@@ -1,7 +1,9 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import Table from "../components/table/Table";
+import { useAppDispatch } from "../app/hooks";
+import { findRoomByHostAsync } from "../services/room.service";
 const HositingPageStyles = styled.div`
   max-width: 153.6rem;
   margin: 0 auto;
@@ -40,24 +42,110 @@ const HositingPageStyles = styled.div`
       }
     }
   }
+
   .table {
     .title {
       display: flex;
       align-items: center;
     }
     .img-item {
-        height: 4rem;
-        width: 5.6rem;
-        margin-right: 2rem;
+      height: 4rem;
+      width: 5.6rem;
+      margin-right: 2rem;
     }
+    /* .td-address {
+      max-width: 40rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    } */
+  }
+  .home-status {
+    width: 1rem;
+    height: 1rem;
+    border-radius: 2rem;
+    margin-right: 1rem;
+    display: inline-block;
+    &.success {
+      background-color: green;
+    }
+    &.danger {
+      background-color: #c13515;
+    }
+  }
+  .btn-work-to-do {
+    padding: 0.7rem 0;
+    font-weight: 700;
+    font-size: 1.4rem;
+    text-align: center;
+    border-radius: 0.8rem;
+    border: 1px solid black;
+    cursor: pointer;
   }
 `;
 const HositingPage = () => {
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+  const [listHome, setListHome] = useState<any>([]);
+  useEffect(() => {
+    dispatch(findRoomByHostAsync())
+      .then((res) => {
+        console.log(res);
+        const { homes } = res.payload.data;
+        setListHome(homes);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }, []);
+  const handleComplete = (step: string, room_id: string) => {
+    switch (String(step)) {
+      case "1":
+        navigate(`/become-a-host/${room_id}/about-your-place`);
+        break;
+      case "2":
+        navigate(`/become-a-host/${room_id}/structure`);
+        break;
+      case "3":
+        navigate(`/become-a-host/${room_id}/location`);
+        break;
+      case "4":
+        navigate(`/become-a-host/${room_id}/floor-plan`);
+        break;
+      case "5":
+        navigate(`/become-a-host/${room_id}/stand-out`);
+        break;
+      case "6":
+        navigate(`/become-a-host/${room_id}/amenities`);
+        break;
+      case "7":
+        navigate(`/become-a-host/${room_id}/photos`);
+        break;
+      case "8":
+        navigate(`/become-a-host/${room_id}/title`);
+        break;
+      case "9":
+        navigate(`/become-a-host/${room_id}/description`);
+        break;
+      case "10":
+        navigate(`/become-a-host/${room_id}/finish-setup`);
+        break;
+      case "11":
+        navigate(`/become-a-host/${room_id}/price`);
+        break;
+      case "12":
+        navigate(`/become-a-host/${room_id}/receipt`);
+        break;
+    }
+  };
   return (
     <HositingPageStyles>
       <div className="host-listings-header">
-        <div className="title">0 nhà / phòng cho thuê</div>
-        <button className="btn btn-create-rent">
+        <div className="title">{listHome.length} nhà / phòng cho thuê</div>
+        <button
+          className="btn btn-create-rent"
+          onClick={() => navigate("/become-a-host/overview")}
+        >
           <i className="fa-regular fa-plus"></i>Tạo mục cho thuê
         </button>
       </div>
@@ -80,36 +168,59 @@ const HositingPage = () => {
               <th scope="col">Nhà/Phòng cho thuê</th>
               <th scope="col">Trạng Thái</th>
               <th scope="col">Việc Cần Làm</th>
-              <th scope="col">Phòng ngủ</th>
+              <th scope="col">Số khách tối đa</th>
               <th scope="col">Giường</th>
               <th scope="col">Phòng Tắm</th>
               <th scope="col">Vị Trí</th>
-              <th scope="col">Hành động</th>
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td>1</td>
-              <th scope="row" className="title">
-                <div className="img-item">
-                  <img
-                    src="https://images.unsplash.com/photo-1472851294608-062f824d29cc?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTJ8fHNob3BwaW5nfGVufDB8fDB8fA%3D%3D&auto=format&fit=crop&w=500&q=60"
-                    alt=""
-                  />
-                </div>{" "}
-                Buzzcocks
-              </th>
-              <td>
-                <i className="fa-regular fa-hourglass-start mr-3"></i> Đang tiến
-                hành
-              </td>
-              <td><Link to='' className="btn">Hoàn tất</Link> </td>
-              <td>1</td>
-              <td>1</td>
-              <td>9</td>
-              <td>Khương Trung, Hà Nội</td>
-              <td>Sửa - Xóa</td>
-            </tr>
+            {listHome.map((item: any, index: number) => (
+              <tr key={item.id}>
+                <td>{index + 1}</td>
+                <th scope="row" className="title">
+                  <div className="img-item">
+                    <img src={item.image_main} alt="image_main" />
+                  </div>{" "}
+                  {item.title}
+                </th>
+                <td>
+                  {item.status === 1 ? (
+                    <>
+                      <span className="home-status success"></span>
+                      Đã đăng
+                    </>
+                  ) : item.status === 2 ? (
+                    <>
+                      <span className="home-status success"></span>
+                      Đã hủy
+                    </>
+                  ) : (
+                    <>
+                      <i className="fa-regular fa-hourglass-start mr-3"></i>{" "}
+                      Đang tiến hành
+                    </>
+                  )}
+                </td>
+                <td>
+                  <div
+                    className="btn-work-to-do"
+                    onClick={
+                      item.stepProgress === 12
+                        ? () =>
+                            navigate(`/manage-your-space/${item.id}/details`)
+                        : () => handleComplete(item.stepProgress, item.id)
+                    }
+                  >
+                    {item.stepProgress === 12 ? "Cập nhật" : "Hoàn tất"}
+                  </div>{" "}
+                </td>
+                <td>{item.max_passenger}</td>
+                <td>{item.bed}</td>
+                <td>{item.bathroom}</td>
+                <td>{item.address}</td>
+              </tr>
+            ))}
           </tbody>
         </Table>
       </div>

@@ -66,10 +66,9 @@ const HostLayout = () => {
       }
     } else if (nextPage === "end") {
       newNextPage = "/hosting/listings";
+      await dispatch(updateRoomAsync({...restData, room_id}));
     } else {
-      let res:any = await dispatch(updateRoomAsync({...restData, room_id}));
-      console.log(111,res);
-      
+      await dispatch(updateRoomAsync({...restData, room_id})); 
     }
     navigate(newNextPage);
   };

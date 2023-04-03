@@ -7,6 +7,7 @@ import { useData } from "../../pages/layout/Host/HostLayout";
 import { setStep } from "../../features/room/roomSlice";
 import { useAppDispatch } from "../../app/hooks";
 import { useParams } from "react-router-dom";
+import { findRoomByIdAsync } from "../../services/room.service";
 const DescriptionStyles = styled.div`
   .title-page {
     max-width: 60rem;
@@ -42,14 +43,38 @@ type Props = {
 
 const Description = ({ step }: Props) => {
   const dispatch = useAppDispatch();
-  const [content, setContent] = useState<string>(
-    "Bạn sẽ có một khoảng thời gian tuyệt vời tại nơi ở thoải mái."
-  );
+  const [content, setContent] = useState<string>("");
   const { check, setCheck } = useCheck() as CheckContextType;
-  const { setData } = useData();
+  const { data, setData } = useData();
   const { room_id } = useParams();
   useEffect(() => {
     dispatch(setStep(step));
+    dispatch(findRoomByIdAsync(room_id!))
+      .then((res) => {
+        let { home } = res.payload.data;
+        if (home.description) {
+          setContent(home.description);
+        } else {
+          setContent(
+            "Bạn sẽ có một khoảng thời gian tuyệt vời tại nơi ở thoải mái."
+          );
+        }
+        if (step > home.stepProgress) {
+          setData({
+            stepProgress: step,
+            nextPage: `/become-a-host/${room_id}/finish-setup`,
+            backPage: `/become-a-host/${room_id}/title`,
+          });
+        } else {
+          setData({
+            nextPage: `/become-a-host/${room_id}/finish-setup`,
+            backPage: `/become-a-host/${room_id}/title`,
+          });
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   }, [step, dispatch]);
 
   useEffect(() => {
@@ -58,8 +83,7 @@ const Description = ({ step }: Props) => {
     } else {
       setCheck(true);
       setData({
-        nextPage: `/become-a-host/${room_id}/finish-setup`,
-        backPage: `/become-a-host/${room_id}/title`,
+        ...data,
         description: content,
       });
     }

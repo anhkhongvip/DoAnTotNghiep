@@ -1,5 +1,8 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
+import { useAppDispatch, useAppSelector } from "../../app/hooks";
+import { selectAccount } from "../../features/account/accountSlice";
+import { findServiceByHomeId } from "../../services/room.service";
 const PreviewStyles = styled.div`
   display: flex;
   margin-top: 3rem;
@@ -70,55 +73,71 @@ const PreviewStyles = styled.div`
   }
 `;
 
+type Props = {
+  home: any;
+};
 
-const Preview = () => {
+const Preview = ({ home }: Props) => {
+  const accountSelector = useAppSelector(selectAccount);
+  let { account } = accountSelector;
+  const dispatch = useAppDispatch();
+  const [services, setServices] = useState([]);
+  console.log(accountSelector.account);
+  useEffect(() => {
+    dispatch(findServiceByHomeId(home?.id))
+      .then((res) => {
+        let { service } = res.payload.data;
+        console.log(service);
+        
+        setServices(service);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }, []);
+
   return (
     <PreviewStyles>
       <div className="preview-thumb">
-        <img
-          src="https://images.unsplash.com/photo-1486304873000-235643847519?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1332&q=80"
-          alt=""
-        />
+        <img src={home.image_main} alt="" />
       </div>
       <div className="preview-content">
-        <h2 className="preview-content__title">nhà mơ ước</h2>
+        <h2 className="preview-content__title">{home.title}</h2>
         <div className="preview-content__infor">
           <div className="flex items-center justify-between">
-            <h3 className="preview-content__hostname">Chủ nhà Đinh Hưng</h3>
+            <h3 className="preview-content__hostname">
+              Chủ nhà {account?.username}
+            </h3>
             <div className="avatar-hostname">
-              <img
-                src="https://res.cloudinary.com/dsrwultki/image/upload/v1678865477/images/eexy0ipahuk1bdvrx2je.png"
-                alt=""
-              />
+              <img src={account?.avatar} alt="" />
             </div>
           </div>
           <div className="preview-content__floor-plan group-info">
-            4 khách · 1 phòng ngủ · 1 giường · 1 phòng tắm chung
+            {home.max_passenger} khách · {home.bathroom} phòng tắm chung ·{" "}
+            {home.bed} giường
           </div>
-          <p className="preview-content__desc">
-            Bạn sẽ có một khoảng thời gian tuyệt vời tại nơi ở thoải mái.
-          </p>
+          <p className="preview-content__desc">{home.description}</p>
           <div className="preview-content-service">
             <h3 className="preview-content-service__title">Tiện nghi</h3>
             <ul className="preview-content-service__list">
-              <li className="preview-content-service__item flex items-center justify-between">
-                <div className="preview-content-service__item--title">wifi</div>
-                <i className="fa-regular fa-wifi"></i>
-              </li>
-              <li className="preview-content-service__item flex items-center justify-between">
-                <div className="preview-content-service__item--title">wifi</div>
-                <i className="fa-regular fa-wifi"></i>
-              </li>
-              <li className="preview-content-service__item flex items-center justify-between">
-                <div className="preview-content-service__item--title">wifi</div>
-                <i className="fa-regular fa-wifi"></i>
-              </li>
+              {services.slice(0, 5).map((item: any, index: number) => (
+                <li className="preview-content-service__item flex items-center justify-between" key={item.id}>
+                  <div className="preview-content-service__item--title">
+                  {item.name}
+                  </div>
+                  <i className={item.icon_service}></i>
+                </li>
+              ))}
               <li className="preview-content-service__item service-remaining">
-                <div className="preview-content-service__item--title">+1 tiện nghi nữa</div>
+                <div className="preview-content-service__item--title">
+                  +{services.length - 5} tiện nghi nữa
+                </div>
               </li>
             </ul>
             <h3 className="preview-content-service__title">Vị trí</h3>
-            <span className="preview-content-service__location">Kim Mã, Ba Đình, Hà Nội 100000, Việt Nam</span>
+            <span className="preview-content-service__location">
+              {home.address}
+            </span>
           </div>
         </div>
       </div>

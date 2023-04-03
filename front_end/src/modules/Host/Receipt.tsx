@@ -8,6 +8,7 @@ import { setStep } from "../../features/room/roomSlice";
 import { useAppDispatch } from "../../app/hooks";
 import { useData } from "../../pages/layout/Host/HostLayout";
 import { useParams } from "react-router-dom";
+import { findRoomByIdAsync } from "../../services/room.service";
 
 const ReceiptStyles = styled.div`
   .title {
@@ -85,24 +86,43 @@ const ReceiptStyles = styled.div`
 `;
 
 type Props = {
-  step: number
-}
+  step: number;
+};
 
-const Receipt = ({step}: Props) => {
+const Receipt = ({ step }: Props) => {
   const { setCheck } = useCheck() as CheckContextType;
   const [toggle, setToggle] = useState<boolean>(false);
+  const [home, setHome] = useState<any>(null);
   const dispatch = useAppDispatch();
   const { setData } = useData();
   const { room_id } = useParams();
   useEffect(() => {
     dispatch(setStep(step));
-    setCheck(true)
-    setData({
-      nextPage: 'end',
-      backPage: `/become-a-host/${room_id}/price`,
-    });
+    dispatch(findRoomByIdAsync(room_id!))
+      .then((res) => {
+        let { home } = res.payload.data;
+        setHome(home);
+        if (step > home.stepProgress) {
+          setData({
+            stepProgress: step,
+            status: 1,
+            nextPage: "end",
+            backPage: `/become-a-host/${room_id}/price`,
+          });
+        } else {
+          setData({
+            status: 1,
+            nextPage: "end",
+            backPage: `/become-a-host/${room_id}/price`,
+          });
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+    setCheck(true);
   }, [step, dispatch]);
-  
+
   const closeModal = (event: React.MouseEvent<HTMLElement>) => {
     event.stopPropagation();
     setToggle(false);
@@ -119,18 +139,15 @@ const Receipt = ({step}: Props) => {
         <div className="content flex justify-between mt-16">
           <div className="room-preview" onClick={() => setToggle(true)}>
             <div className="room-preview__image">
-              <img
-                src="https://images.unsplash.com/photo-1486304873000-235643847519?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1332&q=80"
-                alt=""
-              />
+              <img src={home?.image_main} alt="" />
               <div className="room-preview-btn">Hiển thị bản xem trước</div>
             </div>
             <div className="room-preview-content">
               <div className="flex justify-between mt-5">
                 <div className="group">
-                  <h2 className="room-preview-title">Nhà mơ ước</h2>
+                  <h2 className="room-preview-title">{home?.title}</h2>
                   <div className="room-preview-price">
-                    <b>₫332.026</b> đêm
+                    <b>₫{home?.price}</b> đêm
                   </div>
                 </div>
                 <div className="room-preview-rate">
@@ -182,13 +199,15 @@ const Receipt = ({step}: Props) => {
           </div>
         </div>
       </div>
-      <Modal
-        title="Bản xem trước đầy đủ"
-        toggle={toggle}
-        closeFn={(event) => closeModal(event)}
-      >
-        <Preview/>
-      </Modal>
+      {home && (
+        <Modal
+          title="Bản xem trước đầy đủ"
+          toggle={toggle}
+          closeFn={(event) => closeModal(event)}
+        >
+          <Preview home={home} />
+        </Modal>
+      )}
     </ReceiptStyles>
   );
 };

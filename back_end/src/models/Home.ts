@@ -13,8 +13,8 @@ export class Home {
   @Column({ type: "varchar", length: 200, nullable: true})
   public title: string | null;
 
-  @Column({ type: "int", default: 100000 })
-  public price: number;
+  @Column({ type: "int", nullable: true })
+  public price: number | null;
 
   @Column({ type: "varchar", nullable: true})
   public address: string | null;
@@ -27,6 +27,9 @@ export class Home {
 
   @Column({ type: "int", nullable: true })
   public bathroom: number | null;
+
+  @Column({ type: "int", nullable: true })
+  public bedroom: number | null;
 
   @Column({
     type: "varchar",

@@ -7,4 +7,5 @@ homeRouter.get('/homes/:room_id', homeControllers.findHomeById);
 homeRouter.put('/homes/:room_id', authTokenMiddleware, homeControllers.updateHome);
 homeRouter.get('/find-service/:room_id', homeControllers.findServiceByHomeId);
 homeRouter.get('/find-image/:room_id', homeControllers.findImageByHomeId);
+homeRouter.get('/find-home-by-host', authTokenMiddleware, homeControllers.getHomeByAccountId);
 export default homeRouter;

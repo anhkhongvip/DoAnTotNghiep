@@ -46,6 +46,21 @@ const findRoomByIdAsync = createAsyncThunk(
   }
 );
 
+const findRoomByHostAsync = createAsyncThunk(
+  "room/findRoomByHostAsync",
+  async () => {
+    const res = await axios.get(
+      `${process.env.REACT_APP_URL}/api/find-home-by-host`,
+      {
+        headers: {
+          authorization: localStorage.getItem("token"),
+        },
+      }
+    );
+    return res.data;
+  }
+);
+
 const findServiceByHomeId = createAsyncThunk(
   "room/findServiceByIdAsync",
   async (room_id: string) => {
@@ -54,7 +69,7 @@ const findServiceByHomeId = createAsyncThunk(
     );
     return res.data;
   }
-)
+);
 
 const findImageByHomeId = createAsyncThunk(
   "room/findImageByHomeIdAsync",
@@ -64,6 +79,13 @@ const findImageByHomeId = createAsyncThunk(
     );
     return res.data;
   }
-)
+);
 
-export { createRoomAsync, updateRoomAsync, findRoomByIdAsync, findServiceByHomeId, findImageByHomeId };
+export {
+  createRoomAsync,
+  updateRoomAsync,
+  findRoomByIdAsync,
+  findServiceByHomeId,
+  findImageByHomeId,
+  findRoomByHostAsync
+};

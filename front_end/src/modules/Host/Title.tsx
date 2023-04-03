@@ -7,6 +7,7 @@ import { useData } from "../../pages/layout/Host/HostLayout";
 import { setStep } from "../../features/room/roomSlice";
 import { useAppDispatch } from "../../app/hooks";
 import { useParams } from "react-router-dom";
+import { findRoomByIdAsync } from "../../services/room.service";
 const TitleStyles = styled.div`
   margin-top: 7rem;
   .title-page {
@@ -49,11 +50,30 @@ const Title = ({ step }: Props) => {
 
   useEffect(() => {
     dispatch(setStep(step));
-    setData({
-      nextPage: `/become-a-host/${room_id}/description`,
-      backPage: `/become-a-host/${room_id}/photos`,
-      title: content,
-    });
+    dispatch(findRoomByIdAsync(room_id!))
+      .then((res) => {
+        let { home } = res.payload.data;
+        if (home.title) {
+          setContent(home.title);
+        }
+        if (step > home.stepProgress) {
+          setData({
+            stepProgress: step,
+            nextPage: `/become-a-host/${room_id}/description`,
+            backPage: `/become-a-host/${room_id}/photos`,
+            title: content,
+          });
+        } else {
+          setData({
+            nextPage: `/become-a-host/${room_id}/description`,
+            backPage: `/become-a-host/${room_id}/photos`,
+            title: content,
+          });
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   }, [step, dispatch]);
 
   useEffect(() => {

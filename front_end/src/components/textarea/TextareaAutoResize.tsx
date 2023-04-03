@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useRef, useState, useLayoutEffect } from "react";
+import React, { ChangeEvent, useRef, useState, useLayoutEffect, useEffect } from "react";
 import styled from "styled-components";
 
 interface styleProps {
@@ -38,15 +38,12 @@ const TextareaAutoResize = ({ content, setContent, error, fontSize = '', height 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [textareaHeight, setTextareaHeight] = useState(height);
   const handleChange = (event: ChangeEvent) => {
-    const { value } = event.target as HTMLTextAreaElement;
-    console.log(value);
-    
+    const { value } = event.target as HTMLTextAreaElement; 
     setContent(value);
   };
+ 
 
   useLayoutEffect(() => {
-    console.log(parseInt(`${textareaRef?.current?.scrollHeight}px`));
-    
     if(parseInt(`${textareaRef?.current?.scrollHeight}px`) > parseInt(height))
     {
         setTextareaHeight(`${textareaRef?.current?.scrollHeight}px`);

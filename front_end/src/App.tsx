@@ -19,6 +19,8 @@ import Description from "./modules/Host/Description";
 import Price from "./modules/Host/Price";
 import Receipt from "./modules/Host/Receipt";
 import Overview from "./modules/Host/Overview";
+import HomeUpdate from "./pages/layout/Home/HomeUpdate";
+import PhotoUpdate from "./modules/Home/HomeUpdate/PhotoUpdate";
 
 function App() {
   const { account } = useAuthentication() as AuthContextType;
@@ -38,6 +40,13 @@ function App() {
                   path="hosting/listings"
                   element={<HositingPage></HositingPage>}
                 ></Route>
+                <Route path="manage-your-space/:room_id/details/">
+                  <Route path="" element={<HomeUpdate></HomeUpdate>}></Route>
+                  <Route
+                    path="photos"
+                    element={<PhotoUpdate></PhotoUpdate>}
+                  ></Route>
+                </Route>
               </>
             ) : null}
           </Route>
@@ -47,10 +56,7 @@ function App() {
           >
             {account ? (
               <>
-              <Route
-                path=""
-                element={<Overview step={1}></Overview>}
-              ></Route>
+                <Route path="" element={<Overview step={1}></Overview>}></Route>
                 <Route
                   path="about-your-place"
                   element={
@@ -120,7 +126,10 @@ function App() {
               </>
             ) : null}
           </Route>
-          <Route path="/notfound" element={<NotFoundPage></NotFoundPage>}></Route>
+          <Route
+            path="/notfound"
+            element={<NotFoundPage></NotFoundPage>}
+          ></Route>
           <Route path="*" element={<NotFoundPage></NotFoundPage>}></Route>
         </Routes>
       </Suspense>

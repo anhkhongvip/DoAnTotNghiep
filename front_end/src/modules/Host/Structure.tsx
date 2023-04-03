@@ -93,22 +93,35 @@ const Structure = ({ step }: Props) => {
     setCheck(false);
     dispatch(setStep(step));
     dispatch(getCategoriesAsync());
-    setData({
-      nextPage: `/become-a-host/${room_id}/location`,
-      backPage: `/become-a-host/${room_id}/about-your-place`,
-    });
-    dispatch(findRoomByIdAsync(room_id!)).then((res) => {
-      if(res.payload.data) {
-        const {category_id} = res.payload.data.home;
-        if(category_id) {
-          (document.querySelector(`#category-${category_id}`)! as HTMLInputElement).checked = true;
-          setCheck(true);
+    dispatch(findRoomByIdAsync(room_id!))
+      .then((res) => {
+        if (res.payload.data) {
+          const { category_id, stepProgress } = res.payload.data.home;
+          if (step > stepProgress) {
+            setData({
+              stepProgress: step,
+              nextPage: `/become-a-host/${room_id}/location`,
+              backPage: `/become-a-host/${room_id}/about-your-place`,
+            });
+          } else {
+            setData({
+              nextPage: `/become-a-host/${room_id}/location`,
+              backPage: `/become-a-host/${room_id}/about-your-place`,
+            });
+          }
+          if (category_id) {
+            (
+              document.querySelector(
+                `#category-${category_id}`
+              )! as HTMLInputElement
+            ).checked = true;
+            setCheck(true);
+          }
         }
-      }
-    }).catch((err) => {
-      console.log(err);
-      
-    });
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   }, [step, dispatch]);
   return (
     <StructureStyles>

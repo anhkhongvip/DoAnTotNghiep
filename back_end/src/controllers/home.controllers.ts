@@ -36,6 +36,31 @@ class HomeController {
       });
     }
   };
+
+  getHomeByAccountId = async (req: Request, res: Response) => {
+    try {
+      let homes = await this.homeRepository.findBy({
+        account_id: req.userId,
+      });
+      res.status(200).json({
+        data: {
+          status: "success",
+          message: "Lấy dữ liệu thành công",
+          homes,
+        },
+      });
+    } catch (error) {
+      console.log(error);
+      
+      res.status(400).json({
+        data: {
+          status: "error",
+          error,
+        },
+      });
+    }
+  };
+
   createHome = async (req: Request, res: Response) => {
     try {
       let home = await this.homeRepository.create({
@@ -60,13 +85,14 @@ class HomeController {
   };
 
   updateHome = async (req: Request, res: Response) => {
+    let { listServiceSelect, stepProgress } = req.body;
     try {
       const home = await this.homeRepository.findOneBy({
         id: req.params.room_id,
         account_id: req.userId,
       });
       if (home) {
-        if (req.body.listServiceSelect) {
+        if (listServiceSelect) {
           let values: any = [];
           await AppDataSource.getRepository(Home_Service)
             .createQueryBuilder()
@@ -74,7 +100,7 @@ class HomeController {
             .from(Home_Service)
             .where("home_id = :home_id", { home_id: req.params.room_id })
             .execute();
-          values = req.body.listServiceSelect.map((item) => {
+          values = listServiceSelect.map((item) => {
             return { service_id: item, home_id: req.params.room_id };
           });
 
@@ -84,6 +110,9 @@ class HomeController {
             .into(Home_Service)
             .values(values)
             .execute();
+
+          this.homeRepository.merge(home, { stepProgress });
+          await this.homeRepository.save(home);
           return res.status(200).json({
             data: {
               status: "success",
@@ -91,7 +120,7 @@ class HomeController {
             },
           });
         } else if (req.body.bannerThumb && req.body.imageList) {
-          let { bannerThumb, imageList } = req.body;
+          let { bannerThumb, imageList, stepProgress } = req.body;
           let { url: image_main, public_id } = bannerThumb;
           let values: any = [];
           await AppDataSource.getRepository(Home_Image)
@@ -109,7 +138,11 @@ class HomeController {
             };
           });
 
-          this.homeRepository.merge(home, {image_main, public_id});
+          this.homeRepository.merge(home, {
+            image_main,
+            public_id,
+            stepProgress,
+          });
           await this.homeRepository.save(home);
 
           await AppDataSource.getRepository(Home_Image)
@@ -190,9 +223,12 @@ class HomeController {
 
   findServiceByHomeId = async (req: Request, res: Response) => {
     try {
-      const service = await AppDataSource.getRepository(Home_Service).findBy({
-        home_id: Number(req.params.room_id),
-      });
+      const service = await AppDataSource.getRepository(Home_Service).query(
+        `select * from home_services inner join services on home_services.service_id = services.id where home_services.home_id = ${Number(
+          req.params.room_id
+        )}`
+      );
+
       if (service) {
         return res.status(200).json({
           data: {

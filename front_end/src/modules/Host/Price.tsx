@@ -6,6 +6,7 @@ import { useAppDispatch } from "../../app/hooks";
 import { setStep } from "../../features/room/roomSlice";
 import { useData } from "../../pages/layout/Host/HostLayout";
 import { useParams } from "react-router-dom";
+import { findRoomByIdAsync } from "../../services/room.service";
 const PriceStyles = styled.div`
   .price-page {
     max-width: 60rem;
@@ -112,6 +113,32 @@ const Price = ({ step }: Props) => {
   const inputRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
     dispatch(setStep(step));
+    dispatch(findRoomByIdAsync(room_id!))
+      .then((res) => {
+        let { home } = res.payload.data;
+        if (home.price) {
+          setPrice(home.price);
+        } else {
+          setPrice(150000);
+        }
+        if (step > home.stepProgress) {
+          setData({
+            stepProgress: step,
+            price,
+            nextPage: `/become-a-host/${room_id}/receipt`,
+            backPage: `/become-a-host/${room_id}/finish-setup`,
+          });
+        } else {
+          setData({
+            price,
+            nextPage: `/become-a-host/${room_id}/receipt`,
+            backPage: `/become-a-host/${room_id}/finish-setup`,
+          });
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   }, [step, dispatch]);
 
   useEffect(() => {
@@ -119,9 +146,8 @@ const Price = ({ step }: Props) => {
       setCheck(false);
     } else {
       setData({
+        ...data,
         price,
-        nextPage: `/become-a-host/${room_id}/receipt`,
-        backPage: `/become-a-host/${room_id}/finish-setup`,
       });
       setCheck(true);
     }

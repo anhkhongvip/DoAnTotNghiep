@@ -76,7 +76,7 @@ const FloorPlanStyles = styled.div`
   }
 `;
 
-type NameObject = "max_passenger" | "bed" | "bathroom";
+type NameObject = "max_passenger" | "bed" | "bathroom" | 'bedroom';
 
 type Props = {
   step: number;
@@ -91,26 +91,31 @@ const FloorPlan = ({ step }: Props) => {
   useEffect(() => {
     dispatch(findRoomByIdAsync(room_id!))
       .then((res) => {
-        if (res.payload.data) {
-          const { max_passenger, bathroom, bed } = res.payload.data.home;
-          if (max_passenger && bathroom && bed) {
+        if (res) {
+          const { max_passenger, bathroom, bed, bedroom, stepProgress } =
+            res.payload.data.home;
+          if (step > stepProgress) {
             setData({
-              max_passenger,
-              bed,
-              bathroom,
-              nextPage: `/become-a-host/${room_id}/stand-out`,
-              backPage: `/become-a-host/${room_id}/location`,
-            });
-          } else {
-            setData({
-              max_passenger: 4,
-              bed: 1,
-              bathroom: 1,
+              stepProgress: step,
+              max_passenger: max_passenger ? max_passenger : 4,
+              bed: bed ? bed : 1,
+              bathroom: bathroom ? bathroom : 1,
+              bedroom: bedroom ? bedroom : 1,
               nextPage: `/become-a-host/${room_id}/stand-out`,
               backPage: `/become-a-host/${room_id}/location`,
             });
           }
-        }
+          else {
+            setData({
+              max_passenger: max_passenger ? max_passenger : 4,
+              bed: bed ? bed : 1,
+              bathroom: bathroom ? bathroom : 1,
+              bedroom: bedroom ? bedroom : 1,
+              nextPage: `/become-a-host/${room_id}/stand-out`,
+              backPage: `/become-a-host/${room_id}/location`,
+            });
+          }
+        } 
       })
       .catch((err) => {
         console.log(err);
@@ -157,6 +162,24 @@ const FloorPlan = ({ step }: Props) => {
                 className="btn-up"
                 onClick={() => handleClickUp("max_passenger")}
               >
+                <i className="fa-regular fa-plus"></i>
+              </button>
+            </div>
+          </div>
+          <div className="item-group">
+            <div className="item-title">Phòng ngủ</div>
+            <div className="item-count">
+              {data?.bedroom > 1 && (
+                <button
+                  className="btn-down"
+                  onClick={() => handleClickDown("bedroom")}
+                >
+                  <i className="fa-regular fa-minus"></i>
+                </button>
+              )}
+
+              <span className="amount">{data?.bedroom}</span>
+              <button className="btn-up" onClick={() => handleClickUp("bedroom")}>
                 <i className="fa-regular fa-plus"></i>
               </button>
             </div>

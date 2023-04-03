@@ -11,6 +11,7 @@
     font-family: "Quicksand", sans-serif;
     font-size: 16px;
     color: #232323;
+    overflow-x: hidden;
   }
 }
 .container {
@@ -31,8 +32,21 @@
   margin: 0 auto;
 }
 
+.home-success {
+  display: inline-block;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 1rem;
+  background-color: #008a05;
+}
 
-
+.home-danger {
+  display: inline-block;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 1rem;
+  background-color: #c13515;
+}
 
 a {
   text-decoration: none;
@@ -215,8 +229,8 @@ img {
   animation: 1.5s shine linear infinite;
 }
 
-@keyframes shine{
-    to {
-        background-position-x: -200%;
-    }
+@keyframes shine {
+  to {
+    background-position-x: -200%;
+  }
 }

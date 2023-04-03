@@ -1,23 +1,33 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
 import Swal from "sweetalert2";
-import { CheckContextType } from "../../@types/check";
-import { useAppDispatch, useAppSelector } from "../../app/hooks";
-import { LoadingSpinner } from "../../components/loading";
-import { useCheck } from "../../contexts/checkContext";
-import { selectImage } from "../../features/image/imageSlice";
-import {
-  deleteImageAsync,
-  uploadImageAsync,
-} from "../../services/image.service";
-import { setStep } from "../../features/room/roomSlice";
-import { useData } from "../../pages/layout/Host/HostLayout";
-import { useParams } from "react-router-dom";
+import { useAppDispatch, useAppSelector } from "../../../app/hooks";
 import {
   findImageByHomeId,
   findRoomByIdAsync,
-} from "../../services/room.service";
+  updateRoomAsync,
+} from "../../../services/room.service";
+import {
+  deleteImageAsync,
+  uploadImageAsync,
+} from "../../../services/image.service";
+import { selectImage } from "../../../features/image/imageSlice";
+import { log } from "console";
+
 const PhotoStyles = styled.div`
+  .home-update {
+    &__name {
+      font-size: 3rem;
+      font-weight: bold;
+      margin-bottom: 3rem;
+    }
+    &__title {
+      font-size: 2rem;
+      font-weight: bold;
+      margin-bottom: 1rem;
+    }
+  }
   .title {
     display: inline-block;
     margin-top: 2rem;
@@ -135,6 +145,30 @@ const PhotoStyles = styled.div`
       top: 1rem;
       right: 1rem;
     }
+
+    .error-message-entered {
+      display: flex;
+      align-items: center;
+      font-size: 1.4rem;
+      color: #c13515;
+      margin-top: 1rem;
+    }
+  }
+
+  .btn-not-allow {
+    background-color: #ddd !important;
+  }
+
+  .btn-close {
+    font-weight: 700;
+  }
+
+  .btn-save {
+    background-color: black;
+    color: white;
+    padding: 0.5rem 1.5rem;
+    border-radius: 0.8rem;
+    font-weight: 700;
   }
 `;
 
@@ -142,39 +176,26 @@ interface Image {
   public_id: string | null;
   url: string | null;
 }
-type Props = {
-  step: number;
-};
 
-const Photo = ({ step }: Props) => {
+const PhotoUpdate = () => {
   const [bannerThumb, setBannerThumb] = useState<Image>({
     public_id: null,
     url: null,
   });
   const { room_id } = useParams();
-  const { data, setData } = useData();
-  const { setCheck } = useCheck() as CheckContextType;
+  const [check, setCheck] = useState<boolean>(false);
   const [imageList, setImageList] = useState<Array<Image>>([]);
   const [nameLoading, setNameLoading] = useState<string>("");
+  const [home, setHome] = useState<any>();
+  const [data, setData] = useState<any>();
+  const navigate = useNavigate();
 
   const dispatch = useAppDispatch();
   useEffect(() => {
-    dispatch(setStep(step));
     dispatch(findRoomByIdAsync(room_id!))
       .then((res) => {
         let { home } = res.payload.data;
-        if (step > home.stepProgress) {
-          setData({
-            stepProgress: step,
-            nextPage: `/become-a-host/${room_id}/title`,
-            backPage: `/become-a-host/${room_id}/amenities`,
-          });
-        } else {
-          setData({
-            nextPage: `/become-a-host/${room_id}/title`,
-            backPage: `/become-a-host/${room_id}/amenities`,
-          });
-        }
+        setHome(home);
         setBannerThumb({ public_id: home.public_id, url: home.image_main });
       })
       .catch((err) => {
@@ -196,18 +217,17 @@ const Photo = ({ step }: Props) => {
         console.log(err);
       });
     setCheck(false);
-  }, [step, dispatch]);
+  }, [dispatch]);
   const imageSelector = useAppSelector(selectImage);
 
   useEffect(() => {
     if (bannerThumb.url && imageList.length === 3) {
-      setData({ ...data, bannerThumb, imageList });
       setCheck(true);
     } else {
       setCheck(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [bannerThumb, imageList]);
+  }, [bannerThumb, imageList.length]);
 
   const uploadImage = async (event: React.ChangeEvent, nameUpdate: string) => {
     try {
@@ -246,7 +266,7 @@ const Photo = ({ step }: Props) => {
       showCancelButton: true,
       confirmButtonColor: "#222222",
       confirmButtonText: "Xóa ảnh",
-      cancelButtonText: "Hủy"
+      cancelButtonText: "Hủy",
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
@@ -265,7 +285,6 @@ const Photo = ({ step }: Props) => {
                 (item) => item.public_id === publicId
               );
               imageListClone.splice(index, 1);
-              console.log(imageListClone);
               setImageList(imageListClone);
             }
           }
@@ -275,16 +294,39 @@ const Photo = ({ step }: Props) => {
       }
     });
   };
+
+  const handleSave = async () => {
+    try {
+      let res = await dispatch(
+        updateRoomAsync({ bannerThumb, imageList, room_id })
+      );
+      let { status } = res.payload.data;
+      if (status) {
+        Swal.fire({
+          position: "center",
+          icon: status,
+          title: 'Cập nhật ảnh phòng/nhà thành công',
+          showConfirmButton: false,
+          timer: 1500,
+        }).then((result) => {
+          if (status === "success") {
+            navigate(`/manage-your-space/${room_id}/details`);
+          }
+        });
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
   return (
     <PhotoStyles>
-      <div className="container-sm photo">
-        <h2 className="title">
-          Bổ sung một số bức ảnh chụp chỗ ở thuộc danh mục nhà của bạn
-        </h2>
-        <p className="description">
-          Bạn sẽ cần 4 bức ảnh để bắt đầu. Đầu tiên, hãy chọn ảnh bìa của bạn và
-          sau đó là những bức ảnh còn lại.
-        </p>
+      <div className="container-md photo">
+        <div className="home-update">
+          <h2 className="home-update__title">
+            Thay đổi ảnh nhà/phòng cho thuê
+          </h2>
+          <h3 className="home-update__name">{home?.title}</h3>
+        </div>
         <div className="content">
           {imageSelector.loading && nameLoading === "image-main" ? (
             <div className="loading-skeleton skeleton"></div>
@@ -366,10 +408,25 @@ const Photo = ({ step }: Props) => {
               )
             )}
           </div>
+          <div className="homeUpdate--footer flex justify-between">
+            <button
+              className="btn-close"
+              onClick={() => navigate(`/manage-your-space/${room_id}/details`)}
+            >
+              Quay lại
+            </button>
+            <button
+              onClick={handleSave}
+              className={`btn-save ${!check ? "btn-not-allow" : ""}`}
+              disabled={!check}
+            >
+              Lưu
+            </button>
+          </div>
         </div>
       </div>
     </PhotoStyles>
   );
 };
 
-export default Photo;
+export default PhotoUpdate;

@@ -1,6 +1,7 @@
 import React from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
+import Swal from "sweetalert2";
 const HeaderStyles = styled.div`
   .navbar {
     max-width: 1440px;
@@ -42,6 +43,23 @@ const HeaderStyles = styled.div`
 `;
 const Header = () => {
   const param = useParams();
+  const navigate = useNavigate();
+  const handleSaveAndExit = () => {
+    Swal.fire({
+      title: "Bạn có chắc chắn muốn thoát không?",
+      text: "Tiến trình của bạn đến thời điểm này đã được lưu.",
+      // icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#ff4757",
+      cancelButtonColor:"#222222",
+      confirmButtonText: "Thoát",
+      cancelButtonText: "Tiếp tục thực hiện"
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        navigate('/hosting/listings')
+      }
+    });
+  };
   return (
     <HeaderStyles>
       <nav className="navbar">
@@ -51,7 +69,7 @@ const Header = () => {
           </div>
           <h3 className="navbar-brand__title">TripGuide</h3>
         </Link>
-        <button className="btn-save-and-exit">Lưu và thoát</button>
+        <button className="btn-save-and-exit" onClick={handleSaveAndExit}>Lưu và thoát</button>
       </nav>
     </HeaderStyles>
   );

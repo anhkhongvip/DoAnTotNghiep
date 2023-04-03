@@ -20,6 +20,7 @@ import { useParams } from "react-router-dom";
 import { useData } from "../../pages/layout/Host/HostLayout";
 import { useCheck } from "../../contexts/checkContext";
 import { CheckContextType } from "../../@types/check";
+import { findRoomByIdAsync } from "../../services/room.service";
 
 type Coordinates = {
   lat: number;
@@ -111,8 +112,6 @@ type Props = {
 const Location = ({ step }: Props) => {
   const dispatch = useAppDispatch();
 
-  
-
   let infowindow: any = null;
   let geocoder: any;
   const [markers, setMarkers] = useState<any>([]);
@@ -127,10 +126,25 @@ const Location = ({ step }: Props) => {
 
   useEffect(() => {
     dispatch(setStep(step));
-    setData({
-      nextPage: `/become-a-host/${room_id}/floor-plan`,
-      backPage: `/become-a-host/${room_id}/structure`,
-    });
+    dispatch(findRoomByIdAsync(room_id!))
+      .then((res) => {
+        let { home } = res.payload.data;
+        if (step > home.stepProgress) {
+          setData({
+            stepProgress: step,
+            nextPage: `/become-a-host/${room_id}/floor-plan`,
+            backPage: `/become-a-host/${room_id}/structure`,
+          });
+        } else {
+          setData({
+            nextPage: `/become-a-host/${room_id}/floor-plan`,
+            backPage: `/become-a-host/${room_id}/structure`,
+          });
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      });
     setCheck(false);
   }, [step, dispatch]);
 
@@ -155,6 +169,13 @@ const Location = ({ step }: Props) => {
   const clearMarker = () => {
     for (let i = 0; i < markers.length; i++) {
       markers[i].setMap(null);
+    }
+  };
+
+  const handleChange = (event: ChangeEvent) => {
+    let { value } = event.target as HTMLInputElement;
+    if (value.length === 0) {
+      setCheck(false);
     }
   };
 
@@ -274,6 +295,7 @@ const Location = ({ step }: Props) => {
                 id="search-location"
                 onBlur={(event) => handleGetPosition(event)}
                 onKeyDown={(event) => handleGetPosition(event)}
+                onChange={handleChange}
                 ref={inputRef}
               />
               <button

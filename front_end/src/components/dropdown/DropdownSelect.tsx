@@ -1,7 +1,7 @@
 import React, { useRef, useState } from "react";
 import styled from "styled-components";
 import useOnClickOutside from "../../hooks/useClickOutside";
-const DropdownStyles = styled.div`
+const DropdownSelectStyles = styled.div`
   position: relative;
   margin-top: 2rem;
   .dropdown {
@@ -80,13 +80,15 @@ type Props = {
   labelHeader: string;
   labelName?: string;
   children?: React.ReactNode;
+  show: boolean;
+  setShow: (show: boolean) => void;
 };
-const Dropdown = ({ labelHeader, labelName, children }: Props) => {
-  const [show, setShow] = useState(false);
+const DropdownSelect = ({ labelHeader, labelName, children, show, setShow }: Props) => {
+  
   const nodeRef = useRef<HTMLDivElement>(null);
   useOnClickOutside(nodeRef, () => setShow(false));
   return (
-    <DropdownStyles ref={nodeRef}>
+    <DropdownSelectStyles ref={nodeRef}>
       <div className="dropdown__heading" onClick={() => setShow(!show)}>
         <div className="dropdown__heading--left">
           <span className="label-header">{labelHeader}</span>
@@ -102,8 +104,8 @@ const Dropdown = ({ labelHeader, labelName, children }: Props) => {
       <div className={`dropdown__content ${show ? "show" : ""}`}>
         {children}
       </div>
-    </DropdownStyles>
+    </DropdownSelectStyles>
   );
 };
 
-export default Dropdown;
+export default DropdownSelect;

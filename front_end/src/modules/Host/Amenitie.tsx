@@ -7,7 +7,10 @@ import { useData } from "../../pages/layout/Host/HostLayout";
 import { useCheck } from "../../contexts/checkContext";
 import { CheckContextType } from "../../@types/check";
 import { getServiceAsync } from "../../services/amenitie.service";
-import { findServiceByHomeId } from "../../services/room.service";
+import {
+  findRoomByIdAsync,
+  findServiceByHomeId,
+} from "../../services/room.service";
 const AmenitieStyles = styled.div`
   .amenitie {
     max-width: 60rem;
@@ -101,6 +104,25 @@ const Amenitie = ({ step }: Props) => {
       .catch((err) => {
         console.log(err);
       });
+    dispatch(findRoomByIdAsync(room_id!))
+      .then((res) => {
+        let { home } = res.payload.data;
+        if (step > home.stepProgress) {
+          setData({
+            stepProgress: step,
+            nextPage: `/become-a-host/${room_id}/photos`,
+            backPage: `/become-a-host/${room_id}/stand-out`,
+          });
+        } else {
+          setData({
+            nextPage: `/become-a-host/${room_id}/photos`,
+            backPage: `/become-a-host/${room_id}/stand-out`,
+          });
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   }, [step]);
 
   useEffect(() => {
@@ -117,16 +139,13 @@ const Amenitie = ({ step }: Props) => {
                 `#service-${item.service_id}`
               ) as HTMLInputElement)!.checked = true;
             });
-            
-          }
-          else {
+          } else {
             setCheck(false);
           }
-          setListServiceSelect(cloneArray)
+          setListServiceSelect(cloneArray);
           setData({
+            ...data,
             listServiceSelect: cloneArray,
-            nextPage: `/become-a-host/${room_id}/photos`,
-            backPage: `/become-a-host/${room_id}/stand-out`,
           });
         })
         .catch((err) => {
