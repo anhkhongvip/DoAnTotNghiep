@@ -1,19 +1,18 @@
 import React, { useEffect, useState, useRef } from "react";
 import styled from "styled-components";
-import { useAppDispatch, useAppSelector } from "../../../app/hooks";
+import { useAppDispatch, useAppSelector } from "../app/hooks";
 import { useNavigate, useParams } from "react-router-dom";
-import {
-  findImageByHomeId,
-  findRoomByIdAsync,
-} from "../../../services/room.service";
-import Title from "../../../modules/Home/HomeUpdate/Title";
-import Description from "../../../modules/Home/HomeUpdate/Description";
-import Status from "../../../modules/Home/HomeUpdate/Status";
-import Location from "../../../modules/Home/HomeUpdate/Location";
-import Structure from "../../../modules/Home/HomeUpdate/Structure";
-import FloorPlan from "../../../modules/Home/HomeUpdate/FloorPlan";
-import Price from "../../../modules/Home/HomeUpdate/Price";
-import { selectRoom } from "../../../features/room/roomSlice";
+import { findImageByHomeId, findRoomByIdAsync } from "../services/room.service";
+import Title from "../modules/Home/HomeUpdate/Title";
+import Description from "../modules/Home/HomeUpdate/Description";
+import Status from "../modules/Home/HomeUpdate/Status";
+import Location from "../modules/Home/HomeUpdate/Location";
+import Structure from "../modules/Home/HomeUpdate/Structure";
+import FloorPlan from "../modules/Home/HomeUpdate/FloorPlan";
+import Price from "../modules/Home/HomeUpdate/Price";
+import { selectRoom } from "../features/room/roomSlice";
+import { getCategoriesAsync } from "../services/category.service";
+import TripTime from "../modules/Home/HomeUpdate/TripTime";
 const HomeUpdateStyles = styled.div`
   .home-update {
     &__name {
@@ -68,19 +67,20 @@ const HomeUpdate = () => {
   const dispatch = useAppDispatch();
   const { room_id } = useParams();
   const [listImage, setListImage] = useState<Array<any>>([]);
-  const [room, setRoom] = useState<number>();
   const roomSelector = useAppSelector(selectRoom);
-  const [home, setHome] = useState<any>();
   const navigate = useNavigate();
+  const [categoryName, setCategoryName] = useState<string>("");
+  const [categories, setCategories] = useState([]);
   const [toogleUpdate, setToogleUpdate] = useState<any>({
     titleToggle: false,
     descriptionToggle: false,
     statusToggle: false,
-    serviceToggle: false,
     locationToggle: false,
     categoryToggle: false,
     priceToggle: false,
     floorPlanToggle: false,
+    minimumTime: false,
+    maximumTime: false,
   });
   useEffect(() => {
     dispatch(findRoomByIdAsync(room_id!))
@@ -112,6 +112,20 @@ const HomeUpdate = () => {
       });
   }, []);
 
+  useEffect(() => {
+    dispatch(getCategoriesAsync())
+      .then((res) => {
+        let { categories } = res.payload.data;
+        let category = categories.find(
+          (item: any) => item.id === roomSelector.room.category_id
+        );
+        setCategories(categories);
+        setCategoryName(category?.name);
+      })
+      .catch((err) => console.log(err));
+  }, [roomSelector.room.category_id]);
+  console.log(roomSelector);
+
   return (
     <HomeUpdateStyles>
       <div className="container-md">
@@ -141,7 +155,7 @@ const HomeUpdate = () => {
             </div>
             <div className="home-update-info">
               <h3 className="title">Thông tin cơ bản về nhà/phòng cho thuê</h3>
-              {toogleUpdate.titleToggle ? (
+              {toogleUpdate.title ? (
                 <Title
                   title={roomSelector.room?.title}
                   setToogleUpdate={setToogleUpdate}
@@ -160,7 +174,7 @@ const HomeUpdate = () => {
                   <div
                     className="btn-edit"
                     onClick={() =>
-                      setToogleUpdate({ ...toogleUpdate, titleToggle: true })
+                      setToogleUpdate({ ...toogleUpdate, timeMinimum: true })
                     }
                   >
                     Chỉnh sửa
@@ -244,7 +258,7 @@ const HomeUpdate = () => {
                 <div
                   className="btn-edit"
                   onClick={() =>
-                    setToogleUpdate({ ...toogleUpdate, serviceToggle: true })
+                    navigate(`/manage-your-space/${room_id}/details/amenities`)
                   }
                 >
                   Chỉnh sửa {">"}
@@ -271,6 +285,70 @@ const HomeUpdate = () => {
                       setToogleUpdate({
                         ...setToogleUpdate,
                         priceToggle: true,
+                      })
+                    }
+                  >
+                    Chỉnh sửa
+                  </div>
+                </div>
+              )}
+
+              <h3 className="title">Thời gian chuyến đi</h3>
+
+              {toogleUpdate.minimumTime ? (
+                <TripTime
+                  setToogleUpdate={setToogleUpdate}
+                  toogleUpdate={toogleUpdate}
+                  type="minimum"
+                  countTime={roomSelector.room?.minimumTime}
+                  minimumTime={roomSelector.room?.minimumTime}
+                  maximumTime={roomSelector.room?.maximumTime}
+                ></TripTime>
+              ) : (
+                <div className="home-update-group flex justify-between">
+                  <div className="group">
+                    <h4 className="home-update-title">Thời gian ở tối thiểu</h4>
+                    <div className="home-update-desc">
+                      {roomSelector.room?.minimumTime} đêm
+                    </div>
+                  </div>
+                  <div
+                    className="btn-edit"
+                    onClick={() =>
+                      setToogleUpdate({
+                        ...setToogleUpdate,
+                        minimumTime: true,
+                      })
+                    }
+                  >
+                    Chỉnh sửa
+                  </div>
+                </div>
+              )}
+
+              {toogleUpdate.maximumTime ? (
+                <TripTime
+                  setToogleUpdate={setToogleUpdate}
+                  toogleUpdate={toogleUpdate}
+                  type="maximum"
+                  countTime={roomSelector.room?.maximumTime}
+                  minimumTime={roomSelector.room?.minimumTime}
+                  maximumTime={roomSelector.room?.maximumTime}
+                ></TripTime>
+              ) : (
+                <div className="home-update-group flex justify-between">
+                  <div className="group">
+                    <h4 className="home-update-title">Thời gian ở tối đa</h4>
+                    <div className="home-update-desc">
+                      {roomSelector.room?.maximumTime} đêm
+                    </div>
+                  </div>
+                  <div
+                    className="btn-edit"
+                    onClick={() =>
+                      setToogleUpdate({
+                        ...setToogleUpdate,
+                        maximumTime: true,
                       })
                     }
                   >
@@ -312,7 +390,8 @@ const HomeUpdate = () => {
 
               {toogleUpdate.categoryToggle ? (
                 <Structure
-                  category_id={roomSelector.room?.category_id}
+                  categoryNameData={categoryName}
+                  categoriesData={categories}
                   setToogleUpdate={setToogleUpdate}
                   toogleUpdate={toogleUpdate}
                 ></Structure>
@@ -320,7 +399,7 @@ const HomeUpdate = () => {
                 <div className="home-update-group flex justify-between">
                   <div className="group">
                     <h4 className="home-update-title">Loại chỗ ở</h4>
-                    <div className="home-update-desc">Nhà</div>
+                    <div className="home-update-desc">{categoryName}</div>
                   </div>
                   <div
                     className="btn-edit"

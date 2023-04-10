@@ -52,6 +52,9 @@ const HositingPageStyles = styled.div`
       height: 4rem;
       width: 5.6rem;
       margin-right: 2rem;
+      background-color: #b0b0b0;
+      border-radius: 0.4rem;
+      overflow: hidden;
     }
     /* .td-address {
       max-width: 40rem;
@@ -179,10 +182,27 @@ const HositingPage = () => {
               <tr key={item.id}>
                 <td>{index + 1}</td>
                 <th scope="row" className="title">
-                  <div className="img-item">
-                    <img src={item.image_main} alt="image_main" />
+                  <div className="img-item flex items-center justify-center">
+                    {item.image_main ? (
+                      <img src={item.image_main} alt="image_main" />
+                    ) : (
+                      <div className="image_default ">
+                        <svg
+                          width="16"
+                          height="16"
+                          viewBox="0 0 16 16"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M8.602 1.147l.093.08 7.153 6.914-.696.718L14 7.745V14.5a.5.5 0 0 1-.41.492L13.5 15H10V9.5a.5.5 0 0 0-.41-.492L9.5 9h-3a.5.5 0 0 0-.492.41L6 9.5V15H2.5a.5.5 0 0 1-.492-.41L2 14.5V7.745L.847 8.86l-.696-.718 7.153-6.915a1 1 0 0 1 1.297-.08z"
+                            fill="#ffffff"
+                          ></path>
+                        </svg>
+                      </div>
+                    )}
                   </div>{" "}
-                  {item.title}
+                  {item.title ? item.title : `Room_${new Date(item.created_at).getTime()}`}
                 </th>
                 <td>
                   {item.status === 1 ? (
@@ -192,7 +212,7 @@ const HositingPage = () => {
                     </>
                   ) : item.status === 2 ? (
                     <>
-                      <span className="home-status success"></span>
+                      <span className="home-status danger"></span>
                       Đã hủy
                     </>
                   ) : (

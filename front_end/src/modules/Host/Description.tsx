@@ -75,7 +75,7 @@ const Description = ({ step }: Props) => {
       .catch((err) => {
         console.log(err);
       });
-  }, [step, dispatch]);
+  }, [dispatch]);
 
   useEffect(() => {
     if (content.length > 500 || content.length === 0) {

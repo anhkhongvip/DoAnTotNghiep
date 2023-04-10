@@ -63,8 +63,17 @@ const DropdownStyles = styled.div`
             width: 3.2rem;
             height: 3.2rem;
             &:hover {
-                border-color: black;
-                color: black;
+              border-color: black;
+              color: black;
+            }
+            &.not-allow {
+              cursor: not-allowed;
+              color: transparent !important;
+              border-color: transparent !important;
+              &:hover {
+                color: transparent !important;
+                border-color: transparent !important;
+              }
             }
           }
           .quantity {

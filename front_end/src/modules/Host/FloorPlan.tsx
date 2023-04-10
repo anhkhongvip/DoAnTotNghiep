@@ -123,7 +123,7 @@ const FloorPlan = ({ step }: Props) => {
 
     setCheck(true);
     dispatch(setStep(step));
-  }, [step, dispatch]);
+  }, [dispatch]);
 
   const handleClickUp = (name: NameObject) => {
     setData({ ...data, [name]: data[name] + 1 });

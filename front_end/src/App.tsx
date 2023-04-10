@@ -19,8 +19,13 @@ import Description from "./modules/Host/Description";
 import Price from "./modules/Host/Price";
 import Receipt from "./modules/Host/Receipt";
 import Overview from "./modules/Host/Overview";
-import HomeUpdate from "./pages/layout/Home/HomeUpdate";
+import HomeUpdate from "./pages/HomeUpdate";
 import PhotoUpdate from "./modules/Home/HomeUpdate/PhotoUpdate";
+import AmenitieUpdate from "./modules/Home/HomeUpdate/AmenitieUpdate";
+import ReservationPage from "./pages/ReservationPage";
+import ReservationItem from "./modules/Reservation/ReservationItem";
+import HomeDetail from "./modules/Home/HomeDetail";
+import HomeStayPage from "./pages/HomeStayPage";
 
 function App() {
   const { account } = useAuthentication() as AuthContextType;
@@ -30,21 +35,45 @@ function App() {
         <Routes>
           <Route path="/" element={<HomeLayout></HomeLayout>}>
             <Route path="/" element={<HomePage></HomePage>}></Route>
+            <Route
+              path="rooms/:room_id"
+              element={<HomeDetail></HomeDetail>}
+            ></Route>
+            <Route
+              path="book/stays/:room_id"
+              element={<HomeStayPage></HomeStayPage>}
+            ></Route>
             {account ? (
               <>
                 <Route
                   path="profile"
                   element={<HomeProfile></HomeProfile>}
                 ></Route>
-                <Route
-                  path="hosting/listings"
-                  element={<HositingPage></HositingPage>}
-                ></Route>
+                <Route path="hosting/">
+                  <Route
+                    path="listings"
+                    element={<HositingPage></HositingPage>}
+                  ></Route>
+                  <Route
+                    path="reservations/:booking_type/"
+                    element={<ReservationPage></ReservationPage>}
+                  >
+                    <Route
+                      path=""
+                      element={<ReservationItem></ReservationItem>}
+                    ></Route>
+                  </Route>
+                </Route>
+
                 <Route path="manage-your-space/:room_id/details/">
                   <Route path="" element={<HomeUpdate></HomeUpdate>}></Route>
                   <Route
                     path="photos"
                     element={<PhotoUpdate></PhotoUpdate>}
+                  ></Route>
+                  <Route
+                    path="amenities"
+                    element={<AmenitieUpdate></AmenitieUpdate>}
                   ></Route>
                 </Route>
               </>

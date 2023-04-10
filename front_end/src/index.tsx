@@ -18,9 +18,11 @@ import { ModalProvider } from "./contexts/modalContext";
 import { ThemeProvider } from "styled-components";
 import { AuthProvider } from "./contexts/authContext";
 import { CheckProvider } from "./contexts/checkContext";
+import '@mobiscroll/react/dist/css/mobiscroll.min.css';
 
 const container = document.getElementById("root")!;
 const root = createRoot(container);
+
 
 root.render(
   <BrowserRouter>

@@ -139,7 +139,7 @@ const Price = ({ step }: Props) => {
       .catch((err) => {
         console.log(err);
       });
-  }, [step, dispatch]);
+  }, [dispatch]);
 
   useEffect(() => {
     if (price > 50000000 || price < 100000) {

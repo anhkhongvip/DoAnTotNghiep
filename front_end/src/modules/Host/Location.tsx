@@ -13,7 +13,6 @@ import React, {
   useState,
 } from "react";
 import styled from "styled-components";
-import MapContainer from "../../components/google_map/MapContainer";
 import { useAppDispatch } from "../../app/hooks";
 import { setStep } from "../../features/room/roomSlice";
 import { useParams } from "react-router-dom";
@@ -146,7 +145,7 @@ const Location = ({ step }: Props) => {
         console.log(err);
       });
     setCheck(false);
-  }, [step, dispatch]);
+  }, [dispatch]);
 
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: "AIzaSyDzzi_VBcf2Oef6LTViLU767UPNHlnIze4",
@@ -206,6 +205,7 @@ const Location = ({ step }: Props) => {
         });
       }
     } else {
+      
       let service = new google.maps.places.PlacesService(map);
       service.findPlaceFromQuery(request, (results: any, status) => {
         if (status === "OK") {

@@ -46,6 +46,26 @@ const findRoomByIdAsync = createAsyncThunk(
   }
 );
 
+const findRoomsAsync = createAsyncThunk(
+  "room/findRoomsAsync",
+  async (data: any) => {
+    let query: string = "";
+    let isBegin = true;
+    for (const element in data) {
+      if (isBegin) {
+        query += `${element}=${data[element]}`;
+        isBegin = false;
+      } else {
+        query += `&${element}=${data[element]}`;
+      }
+    }
+    const res = await axios.get(
+      `${process.env.REACT_APP_URL}/api/find-home?${query}`
+    );
+    return res.data;
+  }
+);
+
 const findRoomByHostAsync = createAsyncThunk(
   "room/findRoomByHostAsync",
   async () => {
@@ -87,5 +107,6 @@ export {
   findRoomByIdAsync,
   findServiceByHomeId,
   findImageByHomeId,
-  findRoomByHostAsync
+  findRoomByHostAsync,
+  findRoomsAsync
 };

@@ -55,6 +55,12 @@ export class Home {
   @Column({ type: "varchar", length: 200, default: '' })
   public description: string;
 
+  @Column({ type: "int", default: 1 })
+  public minimumTime: number; // thời gian ở tối thiểu
+
+  @Column({ type: "int", default: 365 })
+  public maximumTime: number; // thời gian ở tối đa
+
   @Column({ type: "int", nullable: true })
   public rate_star: number;
 

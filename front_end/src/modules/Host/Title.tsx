@@ -74,7 +74,7 @@ const Title = ({ step }: Props) => {
       .catch((err) => {
         console.log(err);
       });
-  }, [step, dispatch]);
+  }, [dispatch]);
 
   useEffect(() => {
     if (content.length > 32 || content.length === 0) {

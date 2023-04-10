@@ -51,7 +51,7 @@ class HomeController {
       });
     } catch (error) {
       console.log(error);
-      
+
       res.status(400).json({
         data: {
           status: "error",
@@ -215,6 +215,28 @@ class HomeController {
       res.status(400).json({
         data: {
           message: "Cập nhật không thành công",
+          error,
+        },
+      });
+    }
+  };
+
+  findHomes = async (req: Request, res: Response) => {
+    try {
+      let homes = await this.homeRepository.findBy(req.query);
+      return res.status(200).json({
+        data: {
+          status: "success",
+          message: "Tìm kiếm thành công",
+          homes,
+        },
+      });
+      ///const homes = await this.homeRepository.query(``);
+    } catch (error) {
+      console.log(error);
+      res.status(400).json({
+        data: {
+          message: "Lỗi",
           error,
         },
       });

@@ -117,7 +117,7 @@ const StepPlan = ({ title, description, src, step, stepTitle }: Props) => {
       });
     setCheck(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [step, dispatch]);
+  }, [dispatch]);
 
   return (
     <StepPlanStyles>

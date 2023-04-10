@@ -122,7 +122,7 @@ const Structure = ({ step }: Props) => {
       .catch((err) => {
         console.log(err);
       });
-  }, [step, dispatch]);
+  }, [dispatch]);
   return (
     <StructureStyles>
       <div className="container-md">

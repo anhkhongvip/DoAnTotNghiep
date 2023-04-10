@@ -82,7 +82,7 @@ const Overview = ({ step }: Props) => {
     });
     setCheck(true);
     dispatch(setStep(step));
-  }, [step]);
+  }, []);
   return (
     <OverviewStyles>
       <div className="overview">

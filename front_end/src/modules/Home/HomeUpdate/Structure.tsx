@@ -2,8 +2,12 @@ import React, { useState, ChangeEvent, useEffect } from "react";
 import styled from "styled-components";
 import Dropdown from "../../../components/dropdown/Dropdown";
 import { DropdownSelect } from "../../../components/dropdown";
-import { useAppDispatch } from "../../../app/hooks";
+import { useAppDispatch, useAppSelector } from "../../../app/hooks";
 import { getCategoriesAsync } from "../../../services/category.service";
+import { updateRoomAsync } from "../../../services/room.service";
+import Swal from "sweetalert2";
+import { selectRoom, setRoom } from "../../../features/room/roomSlice";
+import { useParams } from "react-router-dom";
 
 const StructureStyles = styled.div`
   border: 1px solid #8080804f;
@@ -105,15 +109,23 @@ const StructureStyles = styled.div`
 type Props = {
   toogleUpdate: any;
   setToogleUpdate: (toogleUpdate: any) => void;
-  category_id: number;
+  categoryNameData: string;
+  categoriesData: any;
 };
 
-const Structure = ({ category_id, setToogleUpdate, toogleUpdate }: Props) => {
+const Structure = ({
+  categoriesData,
+  categoryNameData,
+  setToogleUpdate,
+  toogleUpdate,
+}: Props) => {
   const [check, setCheck] = useState<boolean>(false);
   const [show, setShow] = useState(false);
+  const { room_id } = useParams();
+  const roomSelector = useAppSelector(selectRoom);
   const dispatch = useAppDispatch();
-  const [categories, setCategories] = useState<any>([]);
   const [categoryName, setCategoryName] = useState<string>("");
+  const [category_id, setCategoryId] = useState<number>(0);
   const handleClose = () => {
     setToogleUpdate({ ...toogleUpdate, categoryToggle: false });
   };
@@ -122,20 +134,37 @@ const Structure = ({ category_id, setToogleUpdate, toogleUpdate }: Props) => {
     const { dataset, textContent } = event.target as HTMLDivElement;
     const { value } = dataset;
     setCategoryName(textContent!);
+    setCategoryId(Number(value!));
     setCheck(true);
-    console.log(textContent, value);
     setShow(false);
+  };
+  const handleSave = async () => {
+    try {
+      let res = await dispatch(
+        updateRoomAsync({ category_id, room_id })
+      );
+      let { status } = res.payload.data;
+      if (status) {
+        Swal.fire({
+          position: "center",
+          icon: status,
+          title: "Cập nhật loại nhà/phòng thành công",
+          showConfirmButton: false,
+          timer: 1500,
+        }).then((result) => {
+          if (status === "success") {
+            dispatch(setRoom({ ...roomSelector.room, category_id}));
+            setToogleUpdate({ ...toogleUpdate, categoryToggle: false });
+          }
+        });
+      }
+    } catch (err) {
+      console.log(err);
+    }
   };
   useEffect(() => {
     setCheck(false);
-    dispatch(getCategoriesAsync())
-      .then((res) => {
-        let { categories } = res.payload.data;
-        let category = categories.find((item: any) => item.id === category_id);
-        setCategoryName(category.name);
-        setCategories(categories);
-      })
-      .catch((err) => console.log(err));
+    setCategoryName(categoryNameData);
   }, []);
   return (
     <StructureStyles>
@@ -154,7 +183,7 @@ const Structure = ({ category_id, setToogleUpdate, toogleUpdate }: Props) => {
             show={show}
             setShow={setShow}
           >
-            {categories.map((item: any, index: number) => (
+            {categoriesData.map((item: any, index: number) => (
               <div
                 key={item.id}
                 className="dropdown__item"
@@ -176,6 +205,7 @@ const Structure = ({ category_id, setToogleUpdate, toogleUpdate }: Props) => {
           Hủy
         </button>
         <button
+        onClick={handleSave}
           className={`btn-save ${!check ? "btn-not-allow" : ""}`}
           disabled={!check}
         >

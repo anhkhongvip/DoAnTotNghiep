@@ -1,5 +1,10 @@
-import React, { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import {
+  Link,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from "react-router-dom";
 import styled from "styled-components";
 import { format, addDays } from "date-fns";
 import HomeHeaderRouter from "./HomeHeaderRouter";
@@ -7,6 +12,16 @@ import { Formik, Form } from "formik";
 import Calendar from "../../components/calendar/Calendar";
 import Dropdown from "../../components/dropdown/Dropdown";
 import MapContainer from "../../components/google_map/MapContainer";
+import { useAppDispatch } from "../../app/hooks";
+import {
+  findImageByHomeId,
+  findRoomByIdAsync,
+  findServiceByHomeId,
+} from "../../services/room.service";
+import { Datepicker, getJson, localeVi } from "@mobiscroll/react";
+import { GoogleMap, useJsApiLoader } from "@react-google-maps/api";
+import { fommatCurrency } from "../../configs/formatCurrency";
+
 const HomeDetailStyles = styled.div`
   .home {
     &-title {
@@ -49,6 +64,10 @@ const HomeDetailStyles = styled.div`
       &__services {
         font-size: 1.8rem;
         font-weight: 600;
+        &--item {
+          width: calc(100% / 2 - 10rem);
+          margin-top: 2rem;
+        }
       }
     }
     &-booking {
@@ -135,50 +154,184 @@ const HomeDetailStyles = styled.div`
       }
     }
   }
-`;
 
-type Range = {
-  startDate: Date;
-  endDate: Date;
-  key: string;
-};
+  .dropdown-item {
+    &__title {
+      font-weight: 700;
+    }
+    &__desc {
+      font-size: 1.4rem;
+    }
+  }
+  .attention-title {
+    margin-top: 2rem;
+    font-size: 1.3rem;
+  }
+
+  .not-allow-booking {
+    background-color: #316bff8c !important;
+    cursor: not-allowed;
+  }
+`;
 
 interface IHomeBooking {
   searchLocation: string;
 }
+
+type NameObject = "numberOfAdults" | "numberOfChildrens" | "numberOfInfants";
 
 const initialValues: IHomeBooking = {
   searchLocation: "",
 };
 
 const HomeDetail = () => {
+  const google = window.google;
+  const { room_id } = useParams();
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
   const [openDate, setOpenDate] = useState<boolean>(false);
-  const [quantity, setQuantity] = useState<number>(1);
-  const [date, setDate] = useState<[Range]>([
-    {
-      startDate: new Date(),
-      endDate: addDays(new Date(), 7),
-      key: "selection",
-    },
-  ]);
-  let numberDate = useRef<number>(
-    (date[0]?.endDate.getTime() - date[0].startDate.getTime()) /
-      (1000 * 3600 * 24) +
-      1
-  );
+  const [home, setHome] = useState<any>();
+  const [listImage, setListImage] = useState<any>([]);
+  const [services, setServices] = useState<any>([]);
+  const [date, setDate] = useState<any>([]);
+  const [multipleInvalid, setMultipleInvalid] = React.useState([]);
+  const [map, setMap] = useState<any>(null);
+  const [libraries] = useState<any>(["places"]);
+  const [total, setTotal] = useState<any>({
+    totalDay: 0,
+    totalGuest: 1,
+  });
+  const [data, setData] = useState<any>({
+    checkin: null,
+    checkout: null,
+    numberOfAdults: 1,
+    numberOfChildrens: 0,
+    numberOfInfants: 0,
+  });
+  let infowindow: any = null;
+  const [markers, setMarkers] = useState<any>([]);
+
+  const onPageLoadingMultiple = React.useCallback((event: any, inst: any) => {
+    getBookings(event.firstDay, (bookings: any) => {
+      setMultipleInvalid(bookings.invalid);
+    });
+  }, []);
+
+  const handleClickUp = (name: NameObject) => {
+    setData({ ...data, [name]: data[name] + 1 });
+    if (name !== "numberOfInfants") {
+      setTotal({ ...total, totalGuest: total.totalGuest + 1 });
+    }
+  };
+  const handleClickDown = (name: NameObject) => {
+    setData({ ...data, [name]: data[name] - 1 });
+    if (name !== "numberOfInfants") {
+      setTotal({ ...total, totalGuest: total.totalGuest - 1 });
+    }
+  };
+
+  const handleChange = useCallback((ev: any) => {
+    if (ev.value[0] && ev.value[1]) {
+      let dayDiff = Math.round(
+        Math.abs(ev.value[0] - ev.value[1]) / (1000 * 60 * 60 * 24)
+      );
+      setTotal({ ...total, totalDay: dayDiff });
+      setOpenDate(false);
+    } else {
+      setTotal({ ...total, totalDay: 0 });
+    }
+    setDate([ev.value[0], ev.value[1]]);
+    setData({ ...data, checkin: format(new Date(ev.value[0]), "yyyy-MM-dd"), checkout: format(new Date(ev.value[1]), "yyyy-MM-dd") });
+  }, []);
+
+  const getBookings = (date: Date, callback: any) => {
+    const invalid: any = [];
+    const labels: any = [];
+
+    getJson(
+      "//trial.mobiscroll.com/getbookings/?year=" +
+        date.getFullYear() +
+        "&month=" +
+        date.getMonth(),
+      (bookings) => {
+        for (const booking of bookings) {
+          const d = new Date(booking.d);
+          if (booking.nr > 0) {
+            labels.push({
+              start: d,
+              title: booking.nr,
+              textColor: "#e1528f",
+            });
+          } else {
+            invalid.push(d);
+          }
+        }
+        callback({ labels, invalid });
+      },
+      "jsonp"
+    );
+  };
+
+  const { isLoaded } = useJsApiLoader({
+    googleMapsApiKey: "AIzaSyDzzi_VBcf2Oef6LTViLU767UPNHlnIze4",
+    libraries,
+  });
+
+  function createMarker(place: any) {
+    if (!place.geometry || !place.geometry.location) return;
+
+    const marker = new google.maps.Marker({
+      map,
+      position: place.geometry.location,
+    });
+    setMarkers([...markers, marker]);
+    map.panTo(place.geometry.location);
+    infowindow?.setContent(place.name || "");
+    infowindow?.open(map);
+  }
+
+  const clearMarker = () => {
+    for (let i = 0; i < markers.length; i++) {
+      markers[i].setMap(null);
+    }
+  };
 
   useEffect(() => {
-    numberDate.current =
-      (date[0]?.endDate.getTime() - date[0].startDate.getTime()) /
-        (1000 * 3600 * 24) +
-      1;
-  }, [date]);
-  const handleClickDown = () => {
-    setQuantity((quantity) => quantity - 1);
-  };
-  const handleClickUp = () => {
-    setQuantity((quantity) => quantity + 1);
-  };
+    Promise.all([
+      dispatch(findRoomByIdAsync(room_id!)),
+      dispatch(findImageByHomeId(room_id!)),
+      dispatch(findServiceByHomeId(room_id!)),
+    ]).then((res) => {
+      const { home } = res[0].payload.data;
+      setHome(home);
+      const { images } = res[1].payload.data;
+      setListImage(images);
+      const { service } = res[2].payload.data;
+      setServices(service);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (isLoaded && map) {
+      const request = {
+        query: home?.address,
+        fields: ["name", "geometry"],
+      };
+
+      const service = new google.maps.places.PlacesService(map);
+      if (service) {
+        service.findPlaceFromQuery(request, (results: any, status) => {
+          console.log(results);
+          clearMarker();
+
+          if (status === google.maps.places.PlacesServiceStatus.OK && results) {
+            createMarker(results[0]);
+          }
+        });
+      }
+    }
+  }, [home, isLoaded, map]);
+
   return (
     <HomeDetailStyles>
       <div className="container">
@@ -188,11 +341,11 @@ const HomeDetail = () => {
           <span>Chi tiết phòng</span>
         </HomeHeaderRouter>
         <div className="home-body">
-          <h2 className="home-title">Santorini Hạ Long Villa</h2>
+          <h2 className="home-title">{home?.title}</h2>
           <div className="home-rate-location flex items-center">
             <div className="room_content__rate-star mr-2">
               <i className="fa-solid fa-star" style={{ color: "#ffc542" }}></i>{" "}
-              <span>4.8</span> (122 reviews)
+              <span>4.8</span> (122 đánh giá)
             </div>
             <div className="room-location ml-10">
               <svg
@@ -207,178 +360,258 @@ const HomeDetail = () => {
                   fill="#84878B"
                 />
               </svg>
-              <h2 className="room-location-title">
-                Thành phố Đà Nẵng, Việt Nam
-              </h2>
+              <h2 className="room-location-title">{home?.address}</h2>
             </div>
           </div>
           <div className="home-thumb">
             <div className="home-thumb-main">
-              <img
-                src="https://a0.muscache.com/im/pictures/c0b5943a-9c0c-449c-ab3b-cf148b8471c3.jpg?im_w=1200"
-                alt=""
-              />
+              <img src={home?.image_main} alt="" />
             </div>
             <div className="home-thumb-list">
-              <div className="home-thumb-item">
-                <img
-                  src="https://a0.muscache.com/im/pictures/9df73161-3743-4cdb-bc98-864e408af6f0.jpg?im_w=720"
-                  alt=""
-                />
-              </div>
-              <div className="home-thumb-item">
-                <img
-                  src="https://a0.muscache.com/im/pictures/6713071b-519d-49ad-bc64-76db60d8de9d.jpg?im_w=720"
-                  alt=""
-                />
-              </div>
-              <div className="home-thumb-item">
-                <img
-                  src="https://a0.muscache.com/im/pictures/788ec8d8-fdd2-4c45-b6ed-a8b44d98a8df.jpg?im_w=720"
-                  alt=""
-                />
-              </div>
+              {listImage.map((item: any, index: number) => (
+                <div className="home-thumb-item" key={item.id}>
+                  <img src={item?.url} alt="" />
+                </div>
+              ))}
             </div>
           </div>
-          <div className="home-content flex mt-16">
+          <div className="home-content flex justify-between mt-16">
             <div className="home-info">
               <h2 className="home-info__title">Mô tả</h2>
-              <p className="home-info__desc">
-                Arabian Park Hotel is a great choice for travellers looking for
-                a 3 star hotel in Dubai. It is located in Bur Dubai. This Hotel
-                stands out as one of the highly recom.2 kms), Al Wasl Indoor
-                Stadium (1.2 kms), Dubai Mall (5.4 kms), Jumeirah Beach Park
-                (9.6 kms) and Jumeirah Public Beach (15.8 kms).
-              </p>
-              <h2 className="home-info__title">Nơi này có những gì cho bạn</h2>
-              <div className="home-info__services">
-                <div className="home-info__services--item flex flex-wrap items-center">
-                  <i className="fa-regular fa-flower-tulip home-info__services--icon"></i>
-                  <h3 className="home-info__services--title ml-5">
-                    Hướng nhìn ra vườn
-                  </h3>
-                </div>
-                <div className="home-info__services--item flex flex-wrap items-center">
-                  <i className="fa-regular fa-flower-tulip home-info__services--icon"></i>
-                  <h3 className="home-info__services--title ml-5">
-                    Hướng nhìn ra vườn
-                  </h3>
-                </div>
-                <div className="home-info__services--item flex flex-wrap items-center">
-                  <i className="fa-regular fa-flower-tulip home-info__services--icon"></i>
-                  <h3 className="home-info__services--title ml-5">
-                    Hướng nhìn ra vườn
-                  </h3>
-                </div>
-                <div className="home-info__services--item flex flex-wrap items-center">
-                  <i className="fa-regular fa-flower-tulip home-info__services--icon"></i>
-                  <h3 className="home-info__services--title ml-5">
-                    Hướng nhìn ra vườn
-                  </h3>
-                </div>
+              <p className="home-info__desc">{home?.description}</p>
+              <h2 className="home-info__title mt-10">
+                Nơi này có những gì cho bạn
+              </h2>
+              <div className="home-info__services flex flex-wrap">
+                {services.map((item: any, key: number) => (
+                  <div
+                    className="home-info__services--item flex items-center mr-24"
+                    key={item.id}
+                  >
+                    <i className={item?.icon_service}></i>
+                    <h3 className="home-info__services--title ml-5">
+                      {item?.name}
+                    </h3>
+                  </div>
+                ))}
               </div>
             </div>
             <div className="home-booking">
               <div className="home-booking__price-room">
-                1200000 VNĐ <small>/đêm</small>
+                {fommatCurrency("vi-VN", "VND").format(home?.price)}{" "}
+                <small>/đêm</small>
               </div>
-              <Formik
-                initialValues={initialValues}
-                onSubmit={(values, actions) => {
-                  console.log({ values, actions });
-                }}
-              >
-                <Form>
-                  <div
-                    onClick={() => setOpenDate(!openDate)}
-                    className="calendar_check_in_out flex mr-10"
-                  >
-                    <div className="home-booking-checkinout flex items-center">
-                      <div className="home-booking-content">
-                        <label htmlFor="check-in">Nhận phòng</label>
-                        <div className="home-booking-info">
-                          {format(date[0].startDate, "dd/MM/yyyy")}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="home-booking-checkinout flex items-center">
-                      <div className="home-booking-content">
-                        <label htmlFor="check-in">Trả phòng</label>
-                        <div className="home-booking-info">
-                          {format(date[0].endDate, "dd/MM/yyyy")}
-                        </div>
-                      </div>
-                    </div>
-                    {openDate ? (
-                      <div className="calendar-range">
-                        <Calendar date={date} setDate={setDate}></Calendar>
-                      </div>
-                    ) : (
-                      ""
-                    )}
-                  </div>
-                  <Dropdown labelHeader="Khách" labelName={`${quantity} khách`}>
-                    <div className="dropdown__content--item-style-2 flex items-center justify-between">
-                      <h3 className="drowdown-item__title">Khách</h3>
-                      <div className="dropdown-info flex items-center">
-                        {quantity !== 1 ? (
-                          <button
-                            type="button"
-                            className="btn btn-tool btn-decrease"
-                            onClick={handleClickDown}
-                          >
-                            <i className="fa-regular fa-minus"></i>
-                          </button>
-                        ) : null}
-                        <span className="quantity">{quantity}</span>
-                        <button
-                          type="button"
-                          className="btn btn-tool btn-increase"
-                          onClick={handleClickUp}
-                        >
-                          <i className="fa-regular fa-plus"></i>
-                        </button>
-                      </div>
-                    </div>
-                  </Dropdown>
 
-                  <button className="btn btn-booking-submit" type="submit">
-                    Đặt phòng
-                  </button>
+              <div
+                onClick={() => setOpenDate(!openDate)}
+                className="calendar_check_in_out flex mr-10 cursor-pointer"
+              >
+                <div className="home-booking-checkinout flex items-center">
+                  <div className="home-booking-content cursor-pointer">
+                    <label htmlFor="check-in">Nhận phòng</label>
+                    <div className="home-booking-info">
+                      {date[0]
+                        ? format(new Date(date[0]), "dd/MM/yyyy")
+                        : "Chọn ngày"}
+                    </div>
+                  </div>
+                </div>
+                <div className="home-booking-checkinout flex items-center">
+                  <div className="home-booking-content cursor-pointer">
+                    <label htmlFor="check-out">Trả phòng</label>
+                    <div className="home-booking-info">
+                      {date[1]
+                        ? format(new Date(date[1]), "dd/MM/yyyy")
+                        : "Chọn ngày"}
+                    </div>
+                  </div>
+                </div>
+                <div
+                  onClick={(event) => event.stopPropagation()}
+                  className={`calendar-range ${openDate ? "" : "hidden"}`}
+                >
+                  <Datepicker
+                    theme="ios"
+                    themeVariant="light"
+                    dateFormat="DD-MM-YYYY"
+                    select="range"
+                    display="inline"
+                    touchUi={false}
+                    value={date}
+                    onChange={handleChange}
+                    rangeStartLabel="Ngày đến"
+                    rangeEndLabel="Ngày trả"
+                    locale={localeVi}
+                    minRange={3}
+                    maxRange={10}
+                    width={`200px`}
+                    rangeHighlight={true}
+                    showRangeLabels={true}
+                    controls={["calendar"]}
+                    invalid={multipleInvalid}
+                    onPageLoading={onPageLoadingMultiple}
+                  />
+                </div>
+              </div>
+              <Dropdown
+                labelHeader="Khách"
+                labelName={`${total.totalGuest} khách${
+                  data.numberOfInfants > 0
+                    ? `, ${data.numberOfInfants} em bé`
+                    : ""
+                }`}
+              >
+                <div className="dropdown__content--item-style-2 ">
+                  <div className="group flex items-center justify-between">
+                    <div className="group">
+                      <h3 className="dropdown-item__title">Người lớn</h3>
+                      <p className="dropdown-item__desc">Từ 13 tuổi trở lên</p>
+                    </div>
+                    <div className="dropdown-info flex items-center">
+                      <button
+                        type="button"
+                        disabled={!(data.numberOfAdults !== 1)}
+                        className={`btn btn-tool btn-decrease ${
+                          data.numberOfAdults !== 1 ? " " : "not-allow"
+                        }`}
+                        onClick={() => handleClickDown("numberOfAdults")}
+                      >
+                        <i className="fa-regular fa-minus"></i>
+                      </button>
+
+                      <span className="quantity">{data.numberOfAdults}</span>
+
+                      <button
+                        type="button"
+                        disabled={!(total.totalGuest < home?.max_passenger)}
+                        className={`btn btn-tool btn-increase ${
+                          total.totalGuest < home?.max_passenger
+                            ? " "
+                            : "not-allow"
+                        }`}
+                        onClick={() => handleClickUp("numberOfAdults")}
+                      >
+                        <i className="fa-regular fa-plus"></i>
+                      </button>
+                    </div>
+                  </div>
+                  <div className="group flex items-center justify-between mt-7">
+                    <div className="group">
+                      <h3 className="dropdown-item__title">Trẻ em</h3>
+                      <p className="dropdown-item__desc">Độ tuổi 2 - 12</p>
+                    </div>
+                    <div className="dropdown-info flex items-center">
+                      <button
+                        type="button"
+                        disabled={!(data.numberOfChildrens > 0)}
+                        className={`btn btn-tool btn-decrease ${
+                          data.numberOfChildrens > 0 ? " " : "not-allow"
+                        }`}
+                        onClick={() => handleClickDown("numberOfChildrens")}
+                      >
+                        <i className="fa-regular fa-minus"></i>
+                      </button>
+
+                      <span className="quantity">{data.numberOfChildrens}</span>
+
+                      <button
+                        type="button"
+                        disabled={!(total.totalGuest < home?.max_passenger)}
+                        className={`btn btn-tool btn-increase ${
+                          total.totalGuest < home?.max_passenger
+                            ? " "
+                            : "not-allow"
+                        }`}
+                        onClick={() => handleClickUp("numberOfChildrens")}
+                      >
+                        <i className="fa-regular fa-plus"></i>
+                      </button>
+                    </div>
+                  </div>
+                  <div className="group flex items-center justify-between mt-7">
+                    <div className="group">
+                      <h3 className="dropdown-item__title">Em bé</h3>
+                      <p className="dropdown-item__desc">Dưới 2 tuổi</p>
+                    </div>
+                    <div className="dropdown-info flex items-center">
+                      <button
+                        type="button"
+                        disabled={!(data.numberOfInfants > 0)}
+                        className={`btn btn-tool btn-decrease ${
+                          data.numberOfInfants > 0 ? "" : "not-allow"
+                        }`}
+                        onClick={() => handleClickDown("numberOfInfants")}
+                      >
+                        <i className="fa-regular fa-minus"></i>
+                      </button>
+
+                      <span className="quantity">{data.numberOfInfants}</span>
+                      <button
+                        type="button"
+                        disabled={!(data.numberOfInfants < 5)}
+                        className={`btn btn-tool btn-increase ${
+                          data.numberOfInfants < 5 ? "" : "not-allow"
+                        }`}
+                        onClick={() => handleClickUp("numberOfInfants")}
+                      >
+                        <i className="fa-regular fa-plus"></i>
+                      </button>
+                    </div>
+                  </div>
+                  <p className="attention-title">
+                    Chỗ ở này cho phép tối đa {home?.max_passenger} khách, không
+                    tính em bé. Không được phép mang theo thú cưng.
+                  </p>
+                </div>
+              </Dropdown>
+
+              <button
+                className={`btn btn-booking-submit ${
+                  !total?.totalDay ? "not-allow-booking" : ""
+                }`}
+                onClick={() => navigate(`/book/stays/${room_id}?numberOfAdults=${data.numberOfAdults}&numberOfChildrens=${data.numberOfChildrens}&numberOfInfants=${data.numberOfInfants}&checkin=${data.checkin}&checkout=${data.checkout}`)}
+                disabled={!total?.totalDay}
+              >
+                Đặt phòng
+              </button>
+
+              {total?.totalDay ? (
+                <>
                   <div className="text-center booking-p">
                     Bạn vẫn chưa bị trừ tiền
                   </div>
                   <div className="total-money-room flex justify-between">
                     <div className="total-money-room__title">
-                      1200000 VNĐ x {numberDate.current}
+                      {fommatCurrency("vi-VN", "VND").format(home?.price)} x{" "}
+                      {total.totalDay}
                     </div>
-                    <div className="total-money-room__price">$525</div>
+                    <div className="total-money-room__price">
+                      {fommatCurrency("vi-VN", "VND").format(
+                        Number(home?.price) * Number(total.totalDay)
+                      )}
+                    </div>
                   </div>
-                  <ul className="money-service-list">
-                    <li className="money-service-item">
-                      <div className="money-service-item__title">
-                        Phí vệ sinh
-                      </div>
-                      <div className="money-service-item__price">$21</div>
-                    </li>
-                    <li className="money-service-item">
-                      <div className="money-service-item__title">
-                        Phí dịch vụ
-                      </div>
-                      <div className="money-service-item__price">$77</div>
-                    </li>
-                  </ul>
                   <div className="total_money_all flex justify-between">
                     <div className="total-money-room__title">Tổng tiền</div>
-                    <div className="total-money-room__price">$525</div>
+                    <div className="total-money-room__price">
+                      {fommatCurrency("vi-VN", "VND").format(
+                        Number(home?.price) * Number(total.totalDay)
+                      )}
+                    </div>
                   </div>
-                </Form>
-              </Formik>
+                </>
+              ) : null}
             </div>
           </div>
           <div className="home-map">
-            <h2 className="home-map-title">Nơi bạn sẽ đến</h2>
-            <MapContainer></MapContainer>
+            <h2 className="home-map-title mt-16">Nơi bạn sẽ đến</h2>
+            {isLoaded && home && (
+              <GoogleMap
+                onLoad={(map) => setMap(map)}
+                mapContainerStyle={{ height: "50rem", width: "100%" }}
+                zoom={13}
+              ></GoogleMap>
+            )}
           </div>
         </div>
       </div>

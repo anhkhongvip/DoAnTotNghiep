@@ -121,7 +121,7 @@ const Receipt = ({ step }: Props) => {
         console.log(err);
       });
     setCheck(true);
-  }, [step, dispatch]);
+  }, [dispatch]);
 
   const closeModal = (event: React.MouseEvent<HTMLElement>) => {
     event.stopPropagation();

@@ -1,35 +1,16 @@
-import React, { useEffect, useState, ChangeEvent } from "react";
+import React, { ChangeEvent, useState, useEffect } from "react";
+import { useAppDispatch } from "../../../app/hooks";
 import styled from "styled-components";
-import { setStep } from "../../features/room/roomSlice";
-import { useAppDispatch } from "../../app/hooks";
-import { useParams } from "react-router-dom";
-import { useData } from "../../pages/layout/Host/HostLayout";
-import { useCheck } from "../../contexts/checkContext";
-import { CheckContextType } from "../../@types/check";
-import { getServiceAsync } from "../../services/amenitie.service";
+import { useNavigate, useParams } from "react-router-dom";
+import { getServiceAsync } from "../../../services/amenitie.service";
 import {
   findRoomByIdAsync,
   findServiceByHomeId,
-} from "../../services/room.service";
+  updateRoomAsync,
+} from "../../../services/room.service";
+import Swal from "sweetalert2";
 const AmenitieStyles = styled.div`
-  .amenitie {
-    max-width: 60rem;
-  }
-
-  .title {
-    display: inline-block;
-    margin-top: 2rem;
-    font-weight: bold;
-    font-size: 3rem;
-    margin-bottom: 2rem;
-  }
-
-  .description {
-    color: gray;
-    font-weight: bold;
-    margin-bottom: 5rem;
-  }
-
+  margin-bottom: 2rem;
   .input-service {
     display: none;
     &:checked + .label-service {
@@ -37,7 +18,6 @@ const AmenitieStyles = styled.div`
       box-shadow: 0 0 0 2px #000000;
     }
   }
-
   .list-service {
     display: flex;
     flex-wrap: wrap;
@@ -79,20 +59,27 @@ const AmenitieStyles = styled.div`
     font-weight: 700;
     margin: 2rem 0;
   }
-`;
-type Props = {
-  step: number;
-};
 
-const Amenitie = ({ step = 6 }: Props) => {
+  .btn-close {
+    font-weight: 700;
+  }
+  .btn-save {
+    background-color: black;
+    color: white;
+    padding: 0.5rem 1.5rem;
+    border-radius: 0.8rem;
+    font-weight: 700;
+  }
+`;
+const AmenitieUpdate = () => {
   const dispatch = useAppDispatch();
   const { room_id } = useParams();
-  const { data, setData } = useData();
-  const { setCheck } = useCheck() as CheckContextType;
   const [listService, setListService] = useState([]);
   const [listServiceSelect, setListServiceSelect] = useState<Array<number>>([]);
+  const [check, setCheck] = useState<boolean>(false);
+  const [data, setData] = useState<any>([]);
+  const navigate = useNavigate();
   useEffect(() => {
-    dispatch(setStep(step));
     dispatch(getServiceAsync())
       .then((res) => {
         console.log(res);
@@ -104,27 +91,7 @@ const Amenitie = ({ step = 6 }: Props) => {
       .catch((err) => {
         console.log(err);
       });
-    dispatch(findRoomByIdAsync(room_id!))
-      .then((res) => {
-        let { home } = res.payload.data;
-        if (step > home.stepProgress) {
-          setData({
-            stepProgress: step,
-            nextPage: `/become-a-host/${room_id}/photos`,
-            backPage: `/become-a-host/${room_id}/stand-out`,
-          });
-        } else {
-          setData({
-            nextPage: `/become-a-host/${room_id}/photos`,
-            backPage: `/become-a-host/${room_id}/stand-out`,
-          });
-        }
-      })
-      .catch((err) => {
-        console.log(err);
-      });
   }, []);
-
   useEffect(() => {
     if (listService.length > 0) {
       dispatch(findServiceByHomeId(room_id!))
@@ -171,13 +138,37 @@ const Amenitie = ({ step = 6 }: Props) => {
     setData({ ...data, listServiceSelect: cloneArray });
     setCheck(true);
   };
+
+  const handleClose = () => {
+    navigate(`/manage-your-space/${room_id}/details/`);
+  };
+
+  const handleSave = async () => {
+    try {
+      let res = await dispatch(updateRoomAsync({...data, room_id}));
+      let { status } = res.payload.data;
+      if (status) {
+        Swal.fire({
+          position: "center",
+          icon: status,
+          title: "Cập nhật dịch vụ nhà/phòng thành công",
+          showConfirmButton: false,
+          timer: 1500,
+        }).then((result) => {
+          if (status === "success") {
+            navigate(`/manage-your-space/${room_id}/details`);
+          }
+        });
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
   return (
     <AmenitieStyles>
       <div className="container-sm amenitie">
-        <h2 className="title">Cho khách biết chỗ ở của bạn có những gì</h2>
-        <p className="description">
-          Bạn có thể thêm tiện nghi sau khi đăng mục cho thuê.
-        </p>
+        <h2 className="title-list-service">Phổ biến</h2>
         <div className="list-service">
           {listService.map((item: any, index: number) => {
             if (item.type_service === 1) {
@@ -204,9 +195,7 @@ const Amenitie = ({ step = 6 }: Props) => {
             }
           })}
         </div>
-        <h2 className="title-list-service">
-          Bạn có tiện nghi nào nổi bật không?
-        </h2>
+        <h2 className="title-list-service">Nổi bật</h2>
         <div className="list-service">
           {listService.map((item: any, index: number) => {
             if (item.type_service === 2) {
@@ -233,10 +222,7 @@ const Amenitie = ({ step = 6 }: Props) => {
             }
           })}
         </div>
-        <h2 className="title-list-service">
-          Bạn có tiện nghi nào trong số những tiện nghi đảm bảo an toàn sau đây
-          không?
-        </h2>
+        <h2 className="title-list-service">An toàn</h2>
         <div className="list-service">
           {listService.map((item: any, index: number) => {
             if (item.type_service === 3) {
@@ -263,9 +249,21 @@ const Amenitie = ({ step = 6 }: Props) => {
             }
           })}
         </div>
+        <div className="footer flex justify-between">
+          <button onClick={handleClose} className="btn-close">
+            Quay lại
+          </button>
+          <button
+            onClick={handleSave}
+            className={`btn-save ${!check ? "btn-not-allow" : ""}`}
+            disabled={!check}
+          >
+            Lưu
+          </button>
+        </div>
       </div>
     </AmenitieStyles>
   );
 };
 
-export default Amenitie;
+export default AmenitieUpdate;

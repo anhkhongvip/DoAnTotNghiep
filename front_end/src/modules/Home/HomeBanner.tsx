@@ -1,9 +1,16 @@
-import React, { Fragment, useState } from "react";
+import React, {
+  ChangeEvent,
+  Fragment,
+  useState,
+  useEffect,
+  useCallback,
+} from "react";
 import styled from "styled-components";
 import { useFormik, Form, Field, ErrorMessage, Formik, useField } from "formik";
 import * as Yup from "yup";
 import Calendar from "../../components/calendar/Calendar";
 import { format, addDays } from "date-fns";
+import { Datepicker, getJson, localeVi, setOptions } from "@mobiscroll/react";
 interface FormSearch {
   searchLocation: string;
 }
@@ -113,21 +120,53 @@ const HomeBannerStyles = styled.div`
   }
 `;
 
-type Range = {
-  startDate: Date;
-  endDate: Date;
-  key: string;
-};
 
 const HomeBanner = () => {
   const [openDate, setOpenDate] = useState(false);
-  const [date, setDate] = useState<[Range]>([
-    {
-      startDate: new Date(),
-      endDate: addDays(new Date(), 7),
-      key: "selection",
-    },
-  ]);
+  const [date, setDate] = useState<any>([new Date(), addDays(new Date(), 1)]);
+  const [multipleLabels, setMultipleLabels] = React.useState([]);
+  const [multipleInvalid, setMultipleInvalid] = React.useState([]);
+
+  const onPageLoadingMultiple = React.useCallback((event: any, inst: any) => {
+    getBookings(event.firstDay, (bookings: any) => {
+      setMultipleLabels(bookings.labels);
+      setMultipleInvalid(bookings.invalid);
+    });
+  }, []);
+
+  const handleChange = useCallback((ev: any) => {
+    console.log(ev.value);
+    setDate(ev.value);
+  }, []);
+
+  const getBookings = (date: Date, callback: any) => {
+    const invalid: any = [];
+    const labels: any = [];
+
+    getJson(
+      "//trial.mobiscroll.com/getbookings/?year=" +
+        date.getFullYear() +
+        "&month=" +
+        date.getMonth(),
+      (bookings) => {
+        for (const booking of bookings) {
+          const d = new Date(booking.d);
+          if (booking.nr > 0) {
+            labels.push({
+              start: d,
+              title: booking.nr,
+              textColor: "#e1528f",
+            });
+          } else {
+            invalid.push(d);
+          }
+        }
+        callback({ labels, invalid });
+      },
+      "jsonp"
+    );
+  };
+
   return (
     <HomeBannerStyles>
       <div className="home_banner">
@@ -177,45 +216,68 @@ const HomeBanner = () => {
                 </div>
                 <div className="pills-home-flex-2 flex">
                   <div className="form-group pills-home pills-home-flex-2-1">
-                    <div
-                      onClick={() => setOpenDate(!openDate)}
-                      className="calendar_check_in_out flex mr-10"
-                    >
-                      <div className="date-checkinout flex items-center mr-10">
-                        <div className="date-icon">
-                          <i className="fa-solid fa-calendar-days"></i>
+                    <div className="calendar_check_in_out">
+                      <div
+                      
+                        className="group  flex mr-10 cursor-pointer"
+                        onClick={() => setOpenDate(!openDate)}
+                      >
+                        <div className="date-checkinout flex items-center mr-10">
+                          <div className="date-icon">
+                            <i className="fa-solid fa-calendar-days"></i>
+                          </div>
+                          <div className="date-content">
+                            <label htmlFor="check-in">Ngày đến</label>
+                            <div className="date-info">
+                              {date[0]
+                                ? format(new Date(date[0]), "dd/MM/yyyy")
+                                : "Chọn ngày"}
+                            </div>
+                          </div>
                         </div>
-                        <div className="date-content">
-                          <label htmlFor="check-in">Ngày đến</label>
-                          <div className="date-info">
-                            {format(date[0].startDate, "dd/MM/yyyy")}
+                        <div className="date-checkinout flex items-center">
+                          <div className="date-icon">
+                            <i className="fa-solid fa-arrow-right"></i>
+                          </div>
+                          <div className="date-content">
+                            <label htmlFor="check-in">Ngày đi</label>
+                            <div className="date-info">
+                              {date[1]
+                                ? format(new Date(date[1]), "dd/MM/yyyy") : "Chọn ngày"}
+                            </div>
                           </div>
                         </div>
                       </div>
-                      <div className="date-checkinout flex items-center">
-                        <div className="date-icon">
-                          <i className="fa-solid fa-arrow-right"></i>
-                        </div>
-                        <div className="date-content">
-                          <label htmlFor="check-in">Ngày đi</label>
-                          <div className="date-info">
-                            {format(date[0].endDate, "dd/MM/yyyy")}
-                          </div>
-                        </div>
+                      <div
+                        className={`calendar-range ${openDate ? "" : "hidden"}`}
+                      >
+                        <Datepicker
+                          theme="ios"
+                          themeVariant="light"
+                          dateFormat="DD-MM-YYYY"
+                          select="range"
+                          display="inline"
+                          touchUi={false}
+                          value={date}
+                          onChange={handleChange}
+                          rangeStartLabel="Ngày đến"
+                          rangeEndLabel="Ngày trả"
+                          locale={localeVi}
+                          minRange={3}
+                          maxRange={10}
+                          rangeHighlight={true}
+                          showRangeLabels={true}
+                          controls={["calendar"]}
+                          invalid={multipleInvalid}
+                          onPageLoading={onPageLoadingMultiple}
+                        />
                       </div>
-                      {openDate ? (
-                        <div className="calendar-range">
-                          <Calendar date={date} setDate={setDate}></Calendar>
-                        </div>
-                      ) : (
-                        ""
-                      )}
                     </div>
                   </div>
                   <div className="form-group pills-home pills-home-flex-2-2">
                     <div className="select-box-search flex items-center cursor-pointer">
                       <div className="icon_input">
-                      <i className="fa-solid fa-people-group"></i>
+                        <i className="fa-solid fa-people-group"></i>
                       </div>
                       <MySelectbox name="job" id="job">
                         <option value="doctor">1 phòng, 1 người</option>
@@ -226,7 +288,9 @@ const HomeBanner = () => {
                   </div>
                 </div>
 
-                <button  className="submitSearch" type="submit">Tìm</button>
+                <button className="submitSearch" type="submit">
+                  Tìm
+                </button>
               </Form>
             </Formik>
           </div>
@@ -270,10 +334,7 @@ const MySelectbox = (props: any) => {
   return (
     <Fragment>
       <div className="flex flex-col gap-2 w-full pr-4 ">
-        <select className="cursor-pointer"
-          {...field}
-          {...props}
-        />
+        <select className="cursor-pointer" {...field} {...props} />
       </div>
     </Fragment>
   );
