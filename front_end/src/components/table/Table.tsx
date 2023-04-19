@@ -2,7 +2,7 @@ import React from "react";
 import styled from "styled-components";
 const TableStyles = styled.div`
   background-color: white;
-  max-width: 100vw;
+  max-width: calc(100vw - 1rem);
   width: 100%;
   overflow-x: auto;
   &::-webkit-scrollbar-track {

@@ -1,5 +1,5 @@
 import { Datepicker, localeVi } from "@mobiscroll/react";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Link,
   useNavigate,
@@ -9,22 +9,27 @@ import {
 import styled from "styled-components";
 import { useAppDispatch } from "../app/hooks";
 import { findRoomByIdAsync } from "../services/room.service";
+import { format, addDays } from "date-fns";
+import { fommatCurrency } from "../configs/formatCurrency";
+import { createContractAsync } from "../services/contract.service";
+import { BouceLoading } from "../components/loading";
 const HomeStayPageStyles = styled.div`
   .homestay {
-    margin-top: 5rem;
+    padding-bottom: 2rem;
+    margin-top: 7rem;
     &-back {
-      font-size: 3rem;
+      font-size: 2.2rem;
       font-weight: 500;
       margin-right: 1.5rem;
     }
     &-info {
-      width: calc(100% / 2 - 10rem);
+      width: calc(100% / 2);
     }
     &-title {
       font-size: 3rem;
       font-weight: bold;
+      margin-top: 5rem;
       &-sm {
-        margin-top: 2rem;
         font-size: 2.2rem;
         font-weight: bold;
       }
@@ -130,6 +135,103 @@ const HomeStayPageStyles = styled.div`
       border-radius: 0.8rem;
       font-weight: 700;
     }
+
+    .general-standard {
+      position: relative;
+      margin-top: 2rem;
+      padding-top: 2rem;
+      &::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        border-top: 1px solid #80808063;
+      }
+      &__list {
+        list-style-type: disc;
+        list-style-position: inside;
+      }
+      &__title {
+        font-weight: 700;
+        font-size: 2.2rem;
+      }
+      &__desc {
+        margin: 2rem 0;
+        font-weight: 600;
+      }
+      &__item {
+        margin-top: 1rem;
+        font-weight: 600;
+      }
+    }
+    .btn-continue {
+      font-weight: 600;
+
+      background-image: linear-gradient(
+        to right,
+        #e61e4d 27.5%,
+        #e31c5f 40%,
+        #d70466 57.5%,
+        #bd1e59 75%,
+        #bd1e59 100%
+      );
+      width: 20rem;
+      height: 5rem;
+      color: white;
+      border-radius: 0.8rem;
+    }
+
+    &-order {
+      border: 1px solid #80808063;
+      padding: 2rem;
+      border-radius: 0.8rem;
+      width: calc(100% / 2 - 10rem);
+      position: sticky;
+      top: 8rem;
+      align-self: flex-start;
+      &__image {
+        width: 12.4rem;
+        height: 10.6rem;
+        border-radius: 0.8rem;
+        overflow: hidden;
+      }
+      &__info-room {
+        position: relative;
+        &::before {
+          content: "";
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          width: 100%;
+          border-top: 1px solid #80808063;
+        }
+      }
+      &__rating-room {
+        font-size: 1.4rem;
+      }
+      &__price {
+        & .title {
+          font-size: 2.4rem;
+          font-weight: bold;
+        }
+        &-info {
+          position: relative;
+          font-weight: 500;
+          &::before {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            border-top: 1px solid #80808063;
+          }
+        }
+      }
+      &__total-money {
+        font-weight: 700;
+      }
+    }
   }
 `;
 type NameObject = "numberOfAdults" | "numberOfChildrens" | "numberOfInfants";
@@ -146,6 +248,7 @@ const HomeStayPage = () => {
     numberOfInfants: 0,
     checkin: "2023-04-16",
     checkout: "2023-04-23",
+    total_money: 0,
   });
   const [home, setHome] = useState<any>();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -155,33 +258,38 @@ const HomeStayPage = () => {
     totalDay: 0,
     totalGuest: 1,
   });
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   useEffect(() => {
     dispatch(findRoomByIdAsync(room_id!))
       .then((res) => {
         const { home } = res.payload.data;
         setHome(home);
+        let cloneObj: any = {};
+        let dayDiff = Math.round(
+          Math.abs(
+            Date.parse(searchParams.get("checkin")!) -
+              Date.parse(searchParams.get("checkout")!)
+          ) /
+            (1000 * 60 * 60 * 24)
+        );
+        searchParams.forEach((value, key) => {
+          cloneObj = { ...cloneObj, [key]: value };
+        });
+        setData({ ...cloneObj, total_money: dayDiff * home.price });
+        setTotal({
+          ...total,
+          totalDay: dayDiff,
+          totalGuest:
+            Number(searchParams.get("numberOfAdults")) +
+            Number(searchParams.get("numberOfChildrens")),
+        });
       })
       .catch((err) => {
         console.log(err);
       });
-    let cloneObj: any = {};
-    let dayDiff = Math.round(
-      Math.abs(Date.parse(searchParams.get('checkin')!) - Date.parse(searchParams.get('checkout')!)) / (1000 * 60 * 60 * 24)
-    );
-    searchParams.forEach((value, key) => {
-      cloneObj = { ...cloneObj, [key]: value };
-    });
-    setData(cloneObj);
-    setTotal({
-      ...total,
-      totalDay: dayDiff,
-      totalGuest:
-        Number(searchParams.get("numberOfAdults")) +
-        Number(searchParams.get("numberOfChildrens")) +
-        Number(searchParams.get("numberOfInfants")),
-    });
   }, []);
+
   const handleClickUp = (name: NameObject) => {
     setData({ ...data, [name]: Number(data[name]) + 1 });
     if (name !== "numberOfInfants") {
@@ -205,27 +313,75 @@ const HomeStayPage = () => {
       cloneObj = { ...cloneObj, [key]: value };
     });
     setData(cloneObj);
+    setTotal({
+      ...total,
+      totalGuest:
+        Number(searchParams.get("numberOfAdults")) +
+        Number(searchParams.get("numberOfChildrens")),
+    });
     setToggleUpdate({ ...toggleUpdate, togglePassenger: false });
+  };
+
+  function wait(time: number) {
+    return new Promise((resolve) => {
+      setTimeout(resolve, time);
+    });
+  }
+
+  const handleChange = (ev: any) => {
+    if (ev.value[0] && ev.value[1]) {
+      let dayDiff = Math.round(
+        Math.abs(ev.value[0] - ev.value[1]) / (1000 * 60 * 60 * 24)
+      );
+      console.log(data);
+      
+      setData({
+        ...data,
+        total_money: dayDiff * home?.price,
+        checkin: format(new Date(ev.value[0]), "yyyy-MM-dd"),
+        checkout: format(new Date(ev.value[1]), "yyyy-MM-dd"),
+      });
+      setTotal({ ...total, totalDay: dayDiff });
+    }
+  };
+
+  const handleOrderRequest = async () => {
+    try {
+      setIsLoading(true);
+      let res = await dispatch(createContractAsync({...data, home_id: room_id}));
+      await wait(1500)
+      setIsLoading(false);
+      const { results } = res.payload.data;
+      navigate(`/book/${room_id}/payments/${results.id}`);
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   return (
     <HomeStayPageStyles>
       <div className="container">
+        <h2 className="homestay-title">
+          <button onClick={() => navigate(-1)} className="homestay-back">
+            {"<"}
+          </button>
+          Yêu cầu đặt phòng/đặt chỗ
+        </h2>
         <div className="homestay flex justify-between">
           <div className="homestay-info">
-            <h2 className="homestay-title">
-              <button onClick={() => navigate(-1)} className="homestay-back">
-                {"<"}
-              </button>
-              Yêu cầu đặt phòng/đặt chỗ - {total.totalDay}
-            </h2>
             <h4 className="homestay-title-sm">Chuyến đi của bạn</h4>
             <div className="homestay-content">
               <div className="homestay-content__item flex justify-between items-start">
                 <div className="group">
                   <div className="homestay-content__item--title">Ngày</div>
                   <div className="homestay-content__item--desc">
-                    Ngày 08 - Ngày 14 tháng 4
+                    {
+                      <>
+                        Ngày {format(new Date(data.checkin), "dd")} - Ngày{" "}
+                        {format(new Date(data.checkout), "dd")} tháng{" "}
+                        {format(new Date(data.checkout), "M")}
+                      </>
+                    }
                   </div>
                   <div className="date-booking hidden">
                     <Datepicker
@@ -235,6 +391,7 @@ const HomeStayPage = () => {
                       dateFormat="DD-MM-YYYY"
                       controls={["calendar"]}
                       select="range"
+                      onChange={handleChange}
                       rangeStartLabel="Ngày đến"
                       rangeEndLabel="Ngày trả"
                       showOnClick={false}
@@ -387,7 +544,11 @@ const HomeStayPage = () => {
                   <div className="group">
                     <div className="homestay-content__item--title">Khách</div>
                     <div className="homestay-content__item--desc">
-                      {total.totalGuest} khách
+                      {`${total.totalGuest} khách${
+                        data.numberOfInfants > 0
+                          ? `, ${data.numberOfInfants} em bé`
+                          : ""
+                      }`}
                     </div>
                   </div>
                   <button
@@ -403,6 +564,70 @@ const HomeStayPage = () => {
                   </button>
                 </div>
               )}
+
+              <div className="general-standard">
+                <h2 className="general-standard__title">Quy chuẩn chung</h2>
+                <p className="general-standard__desc">
+                  Chúng tôi yêu cầu tất cả khách phải ghi nhớ một số quy chuẩn
+                  đơn giản để làm một vị khách tuyệt vời.
+                </p>
+                <ul className="general-standard__list">
+                  <li className="general-standard__item">
+                    <span>Tuân thủ nội quy nhà</span>
+                  </li>
+                  <li className="general-standard__item">
+                    <span>Giữ gìn ngôi nhà như thể đó là nhà bạn</span>
+                  </li>
+                </ul>
+              </div>
+
+              <button
+                className="btn btn-continue mt-16"
+                onClick={handleOrderRequest}
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <BouceLoading dotNumber={3} bgColor="#ffff"/>
+                ) : (
+                  "Yêu cầu đặt phòng"
+                )}
+              </button>
+            </div>
+          </div>
+          <div className="homestay-order">
+            <div className="group flex pb-8 homestay-order__info-room">
+              <div className="homestay-order__image">
+                <img src={home?.image_main} alt="" />
+              </div>
+              <div className="group flex flex-col justify-between ml-5">
+                <h2 className="title">{home?.title}</h2>
+
+                <div className="homestay-order__rating-room">
+                  <i className="fa-solid fa-star"></i> Mới
+                </div>
+              </div>
+            </div>
+            <div className="homestay-order__price mt-12">
+              <h2 className="title">Chi tiết giá</h2>
+              <div className="group flex justify-between homestay-order__price-info pb-8 pt-6">
+                <span>
+                  {fommatCurrency("vi-VN", "VND").format(Number(home?.price))} x{" "}
+                  {total.totalDay} đêm
+                </span>
+                <span>
+                  {fommatCurrency("vi-VN", "VND").format(
+                    Number(home?.price) * Number(total.totalDay)
+                  )}
+                </span>
+              </div>
+              <div className="group flex justify-between homestay-order__total-money mt-10">
+                <span>Tổng tiền </span>
+                <span>
+                  {fommatCurrency("vi-VN", "VND").format(
+                    Number(home?.price) * Number(total.totalDay)
+                  )}
+                </span>
+              </div>
             </div>
           </div>
         </div>

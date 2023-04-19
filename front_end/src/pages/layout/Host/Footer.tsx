@@ -119,7 +119,7 @@ const Footer = ({
           disabled={!check}
           onClick={handleNext}
         >
-          {loadingNext ? <BouceLoading dotNumber={3} /> : (nextPage === 'begin' ? "Bắt đầu" : (nextPage === 'end' ? 'Đăng' : 'Tiếp theo'))}
+          {loadingNext ? <BouceLoading dotNumber={3} bgColor="#ffff"/> : (nextPage === 'begin' ? "Bắt đầu" : (nextPage === 'end' ? 'Đăng' : 'Tiếp theo'))}
         </button>
       </div>
     </FooterStyles>

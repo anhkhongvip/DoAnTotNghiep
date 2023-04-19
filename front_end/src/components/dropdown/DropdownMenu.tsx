@@ -44,7 +44,7 @@ const DropdownMenu = ({ children, coords, show, ...props }: Props) => {
         top: coords
           ? coords?.top + coords?.height + window.scrollY + 10
           : "100%",
-        width: coords?.width,
+        //width: coords?.width,
       }}
     >
       {children}

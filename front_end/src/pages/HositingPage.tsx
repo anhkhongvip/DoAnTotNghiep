@@ -44,10 +44,6 @@ const HositingPageStyles = styled.div`
   }
 
   .table {
-    .title {
-      display: flex;
-      align-items: center;
-    }
     .img-item {
       height: 4rem;
       width: 5.6rem;
@@ -180,8 +176,8 @@ const HositingPage = () => {
           <tbody>
             {listHome.map((item: any, index: number) => (
               <tr key={item.id}>
-                <td>{index + 1}</td>
-                <th scope="row" className="title">
+                <th scope="row">{index + 1}</th>
+                <td className="title flex items-center">
                   <div className="img-item flex items-center justify-center">
                     {item.image_main ? (
                       <img src={item.image_main} alt="image_main" />
@@ -202,8 +198,10 @@ const HositingPage = () => {
                       </div>
                     )}
                   </div>{" "}
-                  {item.title ? item.title : `Room_${new Date(item.created_at).getTime()}`}
-                </th>
+                  {item.title
+                    ? item.title
+                    : `Room_${new Date(item.created_at).getTime()}`}
+                </td>
                 <td>
                   {item.status === 1 ? (
                     <>

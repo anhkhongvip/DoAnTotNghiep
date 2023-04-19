@@ -7,20 +7,14 @@ export class Home_Day {
   public id: number;
 
   @Column({ type: "date" })
-  public time_start: string;
+  public time: Date;
 
-  @Column({ type: "date" })
-  public time_end: string;
+  @Column({ type: "int", nullable: true })
+  public home_id : number;
 
-  @Column({ type: "int" })
-  public passenger: number;
-
-  @Column({ type: "int", default: 0 })
-  public total_money: number;
+  @Column({ type: "int", nullable: true })
+  public contract_id : number;
 
   @Column({ type: "timestamp", default: () => 'CURRENT_TIMESTAMP' }) // Recommended
   created_at: Date;
-
-  @Column({ type: "int", nullable: true }) //
-  public home_id : number;
 }

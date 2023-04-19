@@ -8,7 +8,6 @@ import {
 import styled from "styled-components";
 import { format, addDays } from "date-fns";
 import HomeHeaderRouter from "./HomeHeaderRouter";
-import { Formik, Form } from "formik";
 import Calendar from "../../components/calendar/Calendar";
 import Dropdown from "../../components/dropdown/Dropdown";
 import MapContainer from "../../components/google_map/MapContainer";
@@ -174,15 +173,10 @@ const HomeDetailStyles = styled.div`
   }
 `;
 
-interface IHomeBooking {
-  searchLocation: string;
-}
 
 type NameObject = "numberOfAdults" | "numberOfChildrens" | "numberOfInfants";
 
-const initialValues: IHomeBooking = {
-  searchLocation: "",
-};
+
 
 const HomeDetail = () => {
   const google = window.google;
@@ -437,7 +431,6 @@ const HomeDetail = () => {
                     select="range"
                     display="inline"
                     touchUi={false}
-                    value={date}
                     onChange={handleChange}
                     rangeStartLabel="Ngày đến"
                     rangeEndLabel="Ngày trả"

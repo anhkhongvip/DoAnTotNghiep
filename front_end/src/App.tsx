@@ -23,9 +23,14 @@ import HomeUpdate from "./pages/HomeUpdate";
 import PhotoUpdate from "./modules/Home/HomeUpdate/PhotoUpdate";
 import AmenitieUpdate from "./modules/Home/HomeUpdate/AmenitieUpdate";
 import ReservationPage from "./pages/ReservationPage";
-import ReservationItem from "./modules/Reservation/ReservationItem";
+import Reservation from "./modules/Reservation/Reservation";
 import HomeDetail from "./modules/Home/HomeDetail";
 import HomeStayPage from "./pages/HomeStayPage";
+import PaymentPage from "./pages/PaymentPage";
+import CongratulationPage from "./pages/CongratulationPage";
+import TripPage from "./pages/TripPage";
+import Trip from "./modules/Trip/Trip";
+import ContractDetail from "./modules/Contract/ContractDetail";
 
 function App() {
   const { account } = useAuthentication() as AuthContextType;
@@ -60,9 +65,20 @@ function App() {
                   >
                     <Route
                       path=""
-                      element={<ReservationItem></ReservationItem>}
+                      element={<Reservation></Reservation>}
                     ></Route>
                   </Route>
+                  <Route
+                    path="contracts/:contract_id"
+                    element={<ContractDetail></ContractDetail>}
+                  ></Route>
+                </Route>
+
+                <Route
+                  path="trips/:booking_type/"
+                  element={<TripPage></TripPage>}
+                >
+                  <Route path="" element={<Trip></Trip>}></Route>
                 </Route>
 
                 <Route path="manage-your-space/:room_id/details/">
@@ -76,6 +92,16 @@ function App() {
                     element={<AmenitieUpdate></AmenitieUpdate>}
                   ></Route>
                 </Route>
+
+                <Route
+                  path="book/:room_id/payments/:contract_id"
+                  element={<PaymentPage></PaymentPage>}
+                ></Route>
+
+                <Route
+                  path="thanks/:contract_id"
+                  element={<CongratulationPage></CongratulationPage>}
+                ></Route>
               </>
             ) : null}
           </Route>

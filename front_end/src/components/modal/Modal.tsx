@@ -71,13 +71,6 @@ const Modal = ({
   closeFn = () => null,
   ...props
 }: Props) => {
-  useEffect(() => {
-    if (toggle) {
-      document.querySelector("body")!.style.overflowY = "hidden";
-    } else {
-      document.querySelector("body")!.style.overflowY = "auto";
-    }
-  }, [toggle]);
   if (typeof document === "undefined") return null;
   return ReactDOM.createPortal(
     <ModalStyles>

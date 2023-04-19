@@ -64,6 +64,7 @@ class HomeController {
   createHome = async (req: Request, res: Response) => {
     try {
       let home = await this.homeRepository.create({
+        ...req.body,
         account_id: req.userId,
       });
       const results = await this.homeRepository.save(home);

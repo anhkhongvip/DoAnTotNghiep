@@ -34,10 +34,10 @@ const StructureStyles = styled.div`
         &:checked + .category-item {
           border-color: black;
         }
-        &:checked + .category-item > .category-item-check::before {
+        /* &:  + .category-item > .category-item-check::before {
           opacity: 1;
           visibility: visible;
-        }
+        } */
       }
       .category-item {
         display: inline-block;

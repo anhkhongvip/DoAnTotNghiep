@@ -155,7 +155,7 @@ const HomeUpdate = () => {
             </div>
             <div className="home-update-info">
               <h3 className="title">Thông tin cơ bản về nhà/phòng cho thuê</h3>
-              {toogleUpdate.title ? (
+              {toogleUpdate.titleToggle ? (
                 <Title
                   title={roomSelector.room?.title}
                   setToogleUpdate={setToogleUpdate}
@@ -174,7 +174,7 @@ const HomeUpdate = () => {
                   <div
                     className="btn-edit"
                     onClick={() =>
-                      setToogleUpdate({ ...toogleUpdate, timeMinimum: true })
+                      setToogleUpdate({ ...toogleUpdate, titleToggle: true })
                     }
                   >
                     Chỉnh sửa
