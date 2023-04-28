@@ -209,18 +209,18 @@ const PaymentPage = () => {
         let { contract } = res.payload.data;
         let dayDiff = Math.round(
           Math.abs(
-            Date.parse(contract.checkin) - Date.parse(contract.checkout)
+            Date.parse(contract[0].checkin) - Date.parse(contract[0].checkout)
           ) /
             (1000 * 60 * 60 * 24)
         );
-        setContract(contract);
+        setContract(contract[0]);
         setTotal({
           totalDay: dayDiff,
           totalGuest:
-            Number(contract.numberOfAdults) +
-            Number(contract.numberOfChildrens),
+            Number(contract[0].numberOfAdults) +
+            Number(contract[0].numberOfChildrens),
         });
-        setMoneyPay(contract.total_money);
+        setMoneyPay(contract[0].total_money);
       })
       .catch((err) => {
         console.log(err);
@@ -257,6 +257,7 @@ const PaymentPage = () => {
     dispatch(
       updateContractAsync({
         contract_id: contract?.id,
+        status: 2,
         status_payment: select.payment === "all" ? 1 : 2,
       })
     )
@@ -496,9 +497,9 @@ const PaymentPage = () => {
               <div className="flex items-center trip-info ">
                 {contract ? (
                   <>
-                    {format(Date.parse(contract?.checkin), "dd-MM-yyyy")}{" "}
+                    {contract?.checkin ? format(Date.parse(contract?.checkin), "dd-MM-yyyy") : ''}{" "}
                     <i className="fa-regular fa-arrow-right-long fa-sm mr-8 ml-8"></i>{" "}
-                    {format(Date.parse(contract?.checkout), "dd-MM-yyyy")}
+                    {contract?.checkout ? format(Date.parse(contract?.checkout), "dd-MM-yyyy") : ''}
                   </>
                 ) : null}
               </div>
@@ -537,7 +538,7 @@ const PaymentPage = () => {
                         {fommatCurrency("vi-VN", "VND").format(
                           Number(home?.price)
                         )}{" "}
-                        x {total.totalDay} đêm
+                        x {total?.totalDay} đêm
                       </span>
                       <span>
                         {fommatCurrency("vi-VN", "VND").format(

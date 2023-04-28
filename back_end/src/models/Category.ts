@@ -1,4 +1,3 @@
-import { Home } from './Home';
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from "typeorm";
 
 @Entity("categories")

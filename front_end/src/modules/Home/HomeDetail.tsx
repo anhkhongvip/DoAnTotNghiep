@@ -20,6 +20,7 @@ import {
 import { Datepicker, getJson, localeVi } from "@mobiscroll/react";
 import { GoogleMap, useJsApiLoader } from "@react-google-maps/api";
 import { fommatCurrency } from "../../configs/formatCurrency";
+import { findContractsAsync } from "../../services/contract.service";
 
 const HomeDetailStyles = styled.div`
   .home {
@@ -91,7 +92,6 @@ const HomeDetailStyles = styled.div`
       &__price-room {
         font-size: 2rem;
         font-weight: 600;
-        margin-bottom: 2rem;
       }
       .calendar_check_in_out {
         width: 100%;
@@ -173,10 +173,7 @@ const HomeDetailStyles = styled.div`
   }
 `;
 
-
 type NameObject = "numberOfAdults" | "numberOfChildrens" | "numberOfInfants";
-
-
 
 const HomeDetail = () => {
   const google = window.google;
@@ -205,11 +202,11 @@ const HomeDetail = () => {
   let infowindow: any = null;
   const [markers, setMarkers] = useState<any>([]);
 
-  const onPageLoadingMultiple = React.useCallback((event: any, inst: any) => {
-    getBookings(event.firstDay, (bookings: any) => {
-      setMultipleInvalid(bookings.invalid);
-    });
-  }, []);
+  // const onPageLoadingMultiple = React.useCallback((event: any, inst: any) => {
+  //   getBookings(event.firstDay, (bookings: any) => {
+  //     setMultipleInvalid(bookings.invalid);
+  //   });
+  // }, []);
 
   const handleClickUp = (name: NameObject) => {
     setData({ ...data, [name]: data[name] + 1 });
@@ -235,36 +232,12 @@ const HomeDetail = () => {
       setTotal({ ...total, totalDay: 0 });
     }
     setDate([ev.value[0], ev.value[1]]);
-    setData({ ...data, checkin: format(new Date(ev.value[0]), "yyyy-MM-dd"), checkout: format(new Date(ev.value[1]), "yyyy-MM-dd") });
+    setData({
+      ...data,
+      checkin: format(new Date(ev.value[0]), "yyyy-MM-dd"),
+      checkout: format(new Date(ev.value[1]), "yyyy-MM-dd"),
+    });
   }, []);
-
-  const getBookings = (date: Date, callback: any) => {
-    const invalid: any = [];
-    const labels: any = [];
-
-    getJson(
-      "//trial.mobiscroll.com/getbookings/?year=" +
-        date.getFullYear() +
-        "&month=" +
-        date.getMonth(),
-      (bookings) => {
-        for (const booking of bookings) {
-          const d = new Date(booking.d);
-          if (booking.nr > 0) {
-            labels.push({
-              start: d,
-              title: booking.nr,
-              textColor: "#e1528f",
-            });
-          } else {
-            invalid.push(d);
-          }
-        }
-        callback({ labels, invalid });
-      },
-      "jsonp"
-    );
-  };
 
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: "AIzaSyDzzi_VBcf2Oef6LTViLU767UPNHlnIze4",
@@ -303,6 +276,22 @@ const HomeDetail = () => {
       const { service } = res[2].payload.data;
       setServices(service);
     });
+
+    dispatch(findContractsAsync({ status: 1, home_id: room_id }))
+      .then((res) => {
+        let { contracts } = res.payload.data;
+        let invalidDay = contracts.map((item: any, index: number) => {
+          return {
+            start: item.checkin,
+            end: item.checkout,
+          };
+        });
+        setMultipleInvalid(invalidDay);
+        console.log(res);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   }, []);
 
   useEffect(() => {
@@ -391,9 +380,12 @@ const HomeDetail = () => {
               </div>
             </div>
             <div className="home-booking">
-              <div className="home-booking__price-room">
-                {fommatCurrency("vi-VN", "VND").format(home?.price)}{" "}
-                <small>/đêm</small>
+              <div className="group flex justify-between items-center mb-5">
+                <div className="home-booking__price-room">
+                  {fommatCurrency("vi-VN", "VND").format(home?.price)}{" "}
+                  <small>/đêm</small>
+                </div>
+                <div>Tối thiểu {home?.minimumTime} đêm</div>
               </div>
 
               <div
@@ -435,14 +427,15 @@ const HomeDetail = () => {
                     rangeStartLabel="Ngày đến"
                     rangeEndLabel="Ngày trả"
                     locale={localeVi}
-                    minRange={3}
-                    maxRange={10}
+                    min={new Date(new Date().getTime() + 1 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)}
+                    // min={Date.now}
+                    minRange={home?.minimumTime}
+                    maxRange={home?.maximumTime}
                     width={`200px`}
                     rangeHighlight={true}
-                    showRangeLabels={true}
                     controls={["calendar"]}
                     invalid={multipleInvalid}
-                    onPageLoading={onPageLoadingMultiple}
+                    //onPageLoading={onPageLoadingMultiple}
                   />
                 </div>
               </div>
@@ -562,7 +555,11 @@ const HomeDetail = () => {
                 className={`btn btn-booking-submit ${
                   !total?.totalDay ? "not-allow-booking" : ""
                 }`}
-                onClick={() => navigate(`/book/stays/${room_id}?numberOfAdults=${data.numberOfAdults}&numberOfChildrens=${data.numberOfChildrens}&numberOfInfants=${data.numberOfInfants}&checkin=${data.checkin}&checkout=${data.checkout}`)}
+                onClick={() =>
+                  navigate(
+                    `/book/stays/${room_id}?numberOfAdults=${data.numberOfAdults}&numberOfChildrens=${data.numberOfChildrens}&numberOfInfants=${data.numberOfInfants}&checkin=${data.checkin}&checkout=${data.checkout}`
+                  )
+                }
                 disabled={!total?.totalDay}
               >
                 Đặt phòng

@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
+import { format } from "date-fns";
 import {
   Eventcalendar,
   getJson,
@@ -8,10 +9,19 @@ import {
   localeVi,
 } from "@mobiscroll/react";
 import { useAppDispatch } from "../../app/hooks";
-import { updateContractAsync } from "../../services/contract.service";
+import {
+  findContractByIdAsync,
+  findContractsAsync,
+  updateContractAsync,
+} from "../../services/contract.service";
+import Swal from "sweetalert2";
+import { findRoomByIdAsync } from "../../services/room.service";
+import { fommatCurrency } from "../../configs/formatCurrency";
+import { getHomeDayByHomeIdAsync } from "../../services/home_day.service";
 const ContractDetailStyles = styled.div`
   .contract {
     margin-top: 5rem;
+    padding-bottom: 2rem;
     .image-thumb {
       width: 67rem;
       height: 40.3rem;
@@ -42,8 +52,7 @@ const ContractDetailStyles = styled.div`
       transition: 0.4s ease-in-out;
     }
 
-    .btn-approval,
-    .btn-decline {
+    .btn-status {
       padding: 1rem 2rem;
       border-radius: 0.8rem;
       display: flex;
@@ -51,63 +60,179 @@ const ContractDetailStyles = styled.div`
       color: #fff;
       font-weight: 700;
       align-items: center;
-    }
 
-    .btn-approval {
-      background-color: #5599ff;
-    }
+      &.status-wait-confirm {
+        background-color: #5599ff;
+      }
 
-    .btn-decline {
-      background-color: #ff5a5f;
+      &.status-decline {
+        background-color: #ff5a5f;
+      }
+
+      &.status-success {
+        background-color: #4cd137;
+        cursor: default;
+      }
     }
   }
 `;
 const ContractDetail = () => {
   const [openCalendar, setOpenCalendar] = useState<boolean>(false);
+  const { contract_id } = useParams();
   const dispatch = useAppDispatch();
-  const now = new Date();
-  const myData = [
-    {
-      title: "Fixed event",
-      start: new Date(now.getFullYear(), now.getMonth(), 18),
-      end: new Date(now.getFullYear(), now.getMonth(), 19),
-      color: "#9e9e9e",
-      editable: false,
-    },
-    {
-      title: "Drag me",
-      start: new Date(now.getFullYear(), now.getMonth(), 3),
-      end: new Date(now.getFullYear(), now.getMonth(), 5),
-      color: "#cc9900",
-    },
-    {
-      title: "Resize me",
-      start: new Date(now.getFullYear(), now.getMonth(), 24),
-      end: new Date(now.getFullYear(), now.getMonth(), 29),
-      color: "#ca4747",
-    },
-    {
-      title: "Move me around",
-      start: new Date(now.getFullYear(), now.getMonth(), 11),
-      end: new Date(now.getFullYear(), now.getMonth(), 14),
-      color: "#339966",
-    },
-  ];
+  const navigate = useNavigate();
+  const [contract, setContract] = useState<any>(null);
+  const [home, setHome] = useState<any>(null);
+  const [dataCalendar, setDataCalendar] = useState<any>([]);
+  useEffect(() => {
+    dispatch(findContractByIdAsync(contract_id!))
+      .then((res) => {
+        const { contract } = res.payload.data;
+        console.log(11111, contract);
+
+        setContract(contract[0]);
+        dispatch(findRoomByIdAsync(contract[0].home_id))
+          .then((res) => {
+            const { home } = res.payload.data;
+            setHome(home);
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+
+        dispatch(
+          findContractsAsync({ home_id: contract[0].home_id, status: 1 })
+        )
+          .then((res) => {
+            console.log(res);
+
+            const { contracts } = res.payload.data;
+            let dataCalendar = contracts.map((item: any, index: number) => {
+              return {
+                title: "Booked",
+                start: Date.parse(item.checkin),
+                end: Date.parse(item.checkout),
+                color: "#" + Math.floor(Math.random() * 16777215).toString(16),
+                editable: false,
+              };
+            });
+            setDataCalendar(dataCalendar);
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }, []);
   const view = React.useMemo(() => {
     return {
       calendar: { labels: true },
     };
   }, []);
-  const { contract_id } = useParams();
 
   const handleApprove = () => {
-    dispatch(updateContractAsync({ status: 1, contract_id }))
-      .then((res) => {
-        console.log(res);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+    Swal.fire({
+      title: "Bạn có chắc muốn xác nhận đơn đặt phòng này chứ?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Xác nhận đặt phòng",
+      cancelButtonText: "Quay lại",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        dispatch(updateContractAsync({ status: 1, contract_id }))
+          .then((res) => {
+            let { data } = res.payload;
+            Swal.fire({
+              position: "center",
+              icon: data.status,
+              title: "Xác nhận đặt phòng thành công",
+              showConfirmButton: false,
+              timer: 1500,
+            }).then((result) => {
+              if (data.status === "success") {
+                navigate("/hosting/reservations/upcoming");
+              }
+            });
+            console.log(res);
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+      }
+    });
+  };
+
+  const handleDecline = () => {
+    Swal.fire({
+      title: "Bạn có chắc muốn hủy đơn đặt này?",
+      text: "Bạn sẽ không thể khôi phục nó",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Xác nhận hủy",
+      cancelButtonText: "Quay lại",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        dispatch(updateContractAsync({ status: 3, contract_id }))
+          .then((res) => {
+            let { data } = res.payload;
+            Swal.fire({
+              position: "center",
+              icon: data.status,
+              title: "Hủy phòng đặt thành công",
+              showConfirmButton: false,
+              timer: 1500,
+            }).then((result) => {
+              if (data.status === "success") {
+                navigate("/hosting/reservations/all");
+              }
+            });
+            console.log(res);
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+      }
+    });
+  };
+
+  const handleConfirmCheckout = () => {
+    Swal.fire({
+      title: "Xác nhận trả phòng?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Đồng ý",
+      cancelButtonText: "Quay lại",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        dispatch(updateContractAsync({ status: 5, contract_id }))
+          .then((res) => {
+            let { data } = res.payload;
+            Swal.fire({
+              position: "center",
+              icon: data.status,
+              title: "Đã xác nhận trả phòng",
+              showConfirmButton: false,
+              timer: 1500,
+            }).then((result) => {
+              if (data.status === "success") {
+                navigate("/hosting/reservations/all");
+              }
+            });
+            console.log(res);
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+      }
+    });
   };
 
   return (
@@ -140,7 +265,7 @@ const ContractDetail = () => {
                     dragToMove={false}
                     dragToResize={false}
                     eventDelete={false}
-                    data={myData}
+                    data={dataCalendar}
                     view={view}
                   />
                 </div>
@@ -154,39 +279,151 @@ const ContractDetail = () => {
               <div className="content">
                 <div className="group flex justify-between">
                   <div className="label">Tên phòng/nhà cho thuê :</div>
-                  <div className="home-title">Nhà đặc biệt</div>
+                  <div className="home-title">{home?.title}</div>
                 </div>
 
                 <div className="group flex justify-between items-center mt-16">
                   <div className="group checkin">
                     <div className="label">Ngày đặt</div>
-                    <div className="">12-10-2023</div>
+                    <div className="">
+                      {contract?.checkin
+                        ? format(Date.parse(contract?.checkin), "dd-MM-yyyy")
+                        : ""}
+                    </div>
                   </div>
                   <i className="fa-regular fa-arrow-right"></i>
                   <div className="group checkout">
                     <div className="label">Ngày trả</div>
-                    <div className="desc">12-10-2023</div>
+                    <div className="desc">
+                      {contract?.checkout
+                        ? format(Date.parse(contract?.checkout), "dd-MM-yyyy")
+                        : ""}
+                    </div>
                   </div>
                 </div>
 
                 <div className="group flex justify-between  mt-16">
                   <div className="label">Khách :</div>
-                  <div className="desc">2 người lớn, 2 trẻ em, 2 em bé</div>
+                  <div className="desc">
+                    {contract?.numberOfAdults} người lớn
+                    {contract?.numberOfChildren
+                      ? `, ${contract?.numberOfChildren} trẻ em`
+                      : ""}
+                    {contract?.numberOfInfants
+                      ? `, ${contract?.numberOfInfants} em bé`
+                      : ""}
+                  </div>
+                </div>
+
+                <div className="group flex justify-between  mt-16">
+                  <div className="label">Người đặt :</div>
+                  <div className="desc">{contract?.username}</div>
+                </div>
+
+                <div className="group flex justify-between  mt-16">
+                  <div className="label">Email :</div>
+                  <div className="desc">{contract?.email}</div>
+                </div>
+
+                <div className="group flex justify-between  mt-16">
+                  <div className="label">Số điện thoại :</div>
+                  <div className="desc">
+                    {contract?.phone_number
+                      ? contract?.phone_number
+                      : "Chưa có"}
+                  </div>
                 </div>
 
                 <div className="group flex justify-between  mt-16">
                   <div className="label">Tổng tiền :</div>
-                  <div className="desc">1000000 vnđ</div>
+                  <div className="desc">
+                    {fommatCurrency("vi-VN", "VND").format(
+                      contract?.total_money
+                    )}
+                  </div>
                 </div>
 
                 <div className="group flex justify-between mt-16">
                   <div className="label">Đã trả :</div>
-                  <div className="desc">500000 vnđ</div>
+                  <div className="desc">
+                    {contract?.status_payment === 1
+                      ? fommatCurrency("vi-VN", "VND").format(
+                          contract?.total_money
+                        )
+                      : fommatCurrency("vi-VN", "VND").format(
+                          contract?.total_money / 2
+                        )}
+                  </div>
                 </div>
               </div>
               <div className="group flex mt-10 status-confirm">
-                <div className="btn-approval mr-10" onClick={handleApprove}>Chấp nhận</div>
-                <div className="btn-decline">Từ chối</div>
+                {contract?.status === 1 && (
+                  <>
+                    {Date.parse(contract?.checkin) > Date.now() ? (
+                      <>
+                        <div className="group flex">
+                          <button
+                            className="btn-status status-success mr-10"
+                            disabled={true}
+                          >
+                            Đã xác nhận
+                          </button>
+                          <div
+                            className="btn-status status-decline ml-5"
+                            onClick={handleDecline}
+                          >
+                            Hủy đặt phòng
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          className="btn-status status-wait-confirm mr-10"
+                          onClick={handleConfirmCheckout}
+                        >
+                          Xác nhận trả phòng
+                        </button>
+                      </>
+                    )}
+                  </>
+                )}
+                {contract?.status === 2 && (
+                  <>
+                    <div
+                      className="btn-status status-wait-confirm mr-10"
+                      onClick={handleApprove}
+                    >
+                      Chấp nhận
+                    </div>
+                    <div
+                      className="btn-status status-decline"
+                      onClick={handleDecline}
+                    >
+                      Từ chối
+                    </div>
+                  </>
+                )}
+
+                {contract?.status === 3 && (
+                  <>
+                    <div
+                      className="btn-status status-decline"
+                      onClick={handleDecline}
+                    >
+                      Đã hủy
+                    </div>
+                  </>
+                )}
+                {contract?.status === 5 && (
+                  <>
+                    <div
+                      className="btn-status status-wait-confirm cursor-default"
+                    >
+                      Đã trả phòng
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </div>

@@ -254,7 +254,7 @@ const Header = () => {
                     Quản lý đặt phòng
                   </Link>
                   <Link
-                    to="/"
+                    to="/trips/upcoming"
                     className="dropdownMenu-item cursor-pointer flex items-center"
                   >
                     <svg

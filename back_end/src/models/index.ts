@@ -6,6 +6,7 @@ import { Home_Day } from "./Home_Day";
 import { Home_Image } from "./Home_Image";
 import { Home_Service } from "./Home_Service";
 import { Service } from "./Services";
+import { Review } from "./Review";
 
 export {
   Account,
@@ -16,4 +17,5 @@ export {
   Home_Service,
   Home,
   Service,
+  Review,
 };

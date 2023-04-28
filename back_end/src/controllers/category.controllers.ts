@@ -7,7 +7,6 @@ class CategoryController {
   constructor() {
     this.categoryRepository = AppDataSource.getRepository(Category);
   }
-
   getAll = async (req: Request, res: Response, next: NextFunction) => {
     try {
       let categories = await this.categoryRepository

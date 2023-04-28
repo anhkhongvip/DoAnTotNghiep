@@ -11,7 +11,10 @@ import { useAppDispatch } from "../app/hooks";
 import { findRoomByIdAsync } from "../services/room.service";
 import { format, addDays } from "date-fns";
 import { fommatCurrency } from "../configs/formatCurrency";
-import { createContractAsync } from "../services/contract.service";
+import {
+  createContractAsync,
+  findContractsAsync,
+} from "../services/contract.service";
 import { BouceLoading } from "../components/loading";
 const HomeStayPageStyles = styled.div`
   .homestay {
@@ -254,6 +257,7 @@ const HomeStayPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  const [multipleInvalid, setMultipleInvalid] = React.useState([]);
   const [total, setTotal] = useState<any>({
     totalDay: 0,
     totalGuest: 1,
@@ -284,6 +288,21 @@ const HomeStayPage = () => {
             Number(searchParams.get("numberOfAdults")) +
             Number(searchParams.get("numberOfChildrens")),
         });
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+    dispatch(findContractsAsync({ status: 1, home_id: room_id }))
+      .then((res) => {
+        let { contracts } = res.payload.data;
+        let invalidDay = contracts.map((item: any, index: number) => {
+          return {
+            start: item.checkin,
+            end: item.checkout,
+          };
+        });
+        setMultipleInvalid(invalidDay);
+        console.log(res);
       })
       .catch((err) => {
         console.log(err);
@@ -334,7 +353,7 @@ const HomeStayPage = () => {
         Math.abs(ev.value[0] - ev.value[1]) / (1000 * 60 * 60 * 24)
       );
       console.log(data);
-      
+
       setData({
         ...data,
         total_money: dayDiff * home?.price,
@@ -348,8 +367,10 @@ const HomeStayPage = () => {
   const handleOrderRequest = async () => {
     try {
       setIsLoading(true);
-      let res = await dispatch(createContractAsync({...data, home_id: room_id}));
-      await wait(1500)
+      let res = await dispatch(
+        createContractAsync({ ...data, home_id: room_id })
+      );
+      await wait(1500);
       setIsLoading(false);
       const { results } = res.payload.data;
       navigate(`/book/${room_id}/payments/${results.id}`);
@@ -394,8 +415,16 @@ const HomeStayPage = () => {
                       onChange={handleChange}
                       rangeStartLabel="Ngày đến"
                       rangeEndLabel="Ngày trả"
+                      minRange={home?.minimumTime}
+                      maxRange={home?.maximumTime}
+                      invalid={multipleInvalid}
                       showOnClick={false}
                       showOnFocus={false}
+                      min={new Date(
+                        new Date().getTime() + 1 * 24 * 60 * 60 * 1000
+                      )
+                        .toISOString()
+                        .slice(0, 10)}
                       isOpen={toggleUpdate.togglePicker}
                       onClose={() =>
                         setToggleUpdate({
@@ -587,7 +616,7 @@ const HomeStayPage = () => {
                 disabled={isLoading}
               >
                 {isLoading ? (
-                  <BouceLoading dotNumber={3} bgColor="#ffff"/>
+                  <BouceLoading dotNumber={3} bgColor="#ffff" />
                 ) : (
                   "Yêu cầu đặt phòng"
                 )}

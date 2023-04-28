@@ -8,6 +8,7 @@ import {
   Home_Image,
   Home_Service,
   Service,
+  Review
 } from "../models";
 
 import { DataSource } from "typeorm";
@@ -30,6 +31,7 @@ const AppDataSource = new DataSource({
     Home_Image,
     Home_Service,
     Service,
+    Review,
   ],
   migrations: ["./dist/src/migrations/*.js"],
 });

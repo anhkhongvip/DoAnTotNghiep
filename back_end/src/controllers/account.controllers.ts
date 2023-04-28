@@ -40,9 +40,8 @@ class AccountController {
         });
         if (result) {
           res.status(201).json({
-            data: {
-              message: "Tạo tài khoản mới thành công",
-            },
+            status: "success",
+            message: "Đăng ký tài khoản thành công",
           });
         }
       }
@@ -71,7 +70,7 @@ class AccountController {
                 status: "success",
                 message: "Đăng nhập thành công",
                 token: `Bearer ${token}`,
-                account
+                account,
               },
             });
           } else {

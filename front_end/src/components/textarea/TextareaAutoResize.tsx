@@ -31,10 +31,11 @@ type Props = {
     setContent: (content: string) => void;
     fontSize?: string
     height?: string
-    error: boolean
+    error: boolean,
+    placeholder?: string
   };
 
-const TextareaAutoResize = ({ content, setContent, error, fontSize = '', height = '140px' }: Props) => { 
+const TextareaAutoResize = ({ content, setContent, error, fontSize = '', height = '140px', placeholder = '' }: Props) => { 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [textareaHeight, setTextareaHeight] = useState(height);
   const handleChange = (event: ChangeEvent) => {
@@ -59,6 +60,7 @@ const TextareaAutoResize = ({ content, setContent, error, fontSize = '', height 
       style={{
         height: textareaHeight,
       }}
+      placeholder={placeholder}
       value={content}
       ref={textareaRef}
       onChange={handleChange}

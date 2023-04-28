@@ -72,6 +72,10 @@ const CongratulationPageStyles = styled.div`
       border-radius: 0.8rem;
       display: inline-block;
       padding: 0.2rem 1rem;
+      &.primary {
+        background-color: #00a8ff;
+        color: white;
+      }
       &.pending {
         background-color: #adb0b9;
         color: #545050;
@@ -79,6 +83,9 @@ const CongratulationPageStyles = styled.div`
       &.success {
         background-color: #4cd137;
         color: white;
+      }
+      &.danger {
+        background-color: #c13515;
       }
     }
   }
@@ -93,9 +100,9 @@ const CongratulationPage = () => {
     dispatch(findContractByIdAsync(contract_id!))
       .then((res) => {
         const { contract } = res.payload.data;
-        if (contract) {
-          setContract(contract);
-          dispatch(findRoomByIdAsync(contract.home_id))
+        if (contract[0]) {
+          setContract(contract[0]);
+          dispatch(findRoomByIdAsync(contract[0].home_id))
             .then((res) => {
               const { home } = res.payload.data;
               setHome(home);

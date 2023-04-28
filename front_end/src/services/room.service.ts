@@ -50,11 +50,9 @@ const findRoomsAsync = createAsyncThunk(
   "room/findRoomsAsync",
   async (data: any) => {
     let query: string = "";
-    let isBegin = true;
     for (const element in data) {
-      if (isBegin) {
+      if (element) {
         query += `${element}=${data[element]}`;
-        isBegin = false;
       } else {
         query += `&${element}=${data[element]}`;
       }

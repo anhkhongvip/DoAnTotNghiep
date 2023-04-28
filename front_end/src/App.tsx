@@ -31,9 +31,12 @@ import CongratulationPage from "./pages/CongratulationPage";
 import TripPage from "./pages/TripPage";
 import Trip from "./modules/Trip/Trip";
 import ContractDetail from "./modules/Contract/ContractDetail";
+import { useAppSelector } from "./app/hooks";
+import { selectAccount } from "./features/account/accountSlice";
+import ItineraryPage from "./modules/Contract/Itinerary";
 
 function App() {
-  const { account } = useAuthentication() as AuthContextType;
+  const { account } = useAppSelector(selectAccount);
   return (
     <Fragment>
       <Suspense>
@@ -98,6 +101,10 @@ function App() {
                   element={<PaymentPage></PaymentPage>}
                 ></Route>
 
+                <Route
+                  path="contracts/:contract_id"
+                  element={<ItineraryPage></ItineraryPage>}
+                ></Route>
                 <Route
                   path="thanks/:contract_id"
                   element={<CongratulationPage></CongratulationPage>}

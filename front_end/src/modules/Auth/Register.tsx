@@ -6,6 +6,12 @@ import styled from "styled-components";
 import { Button } from "../../components/button";
 import * as yup from "yup";
 import { toast } from "react-toastify";
+import { registerAsync } from "../../services/auth.service";
+import Swal from "sweetalert2";
+import { setAccount } from "../../features/account/accountSlice";
+import { ModalContextType } from "../../@types/modal";
+import { useAppDispatch } from "../../app/hooks";
+import { useModal } from "../../contexts/modalContext";
 const RegisterStyles = styled.div`
   .form-auth {
     &-header {
@@ -81,6 +87,9 @@ const Register = () => {
       .required("Mật khẩu không được để trống"),
   });
 
+  const dispatch = useAppDispatch();
+  const { setModalOpen } = useModal() as ModalContextType;
+
   return (
     <RegisterStyles>
       <div className="social-network flex items-center">
@@ -123,52 +132,76 @@ const Register = () => {
           validateOnBlur={false}
           validateOnChange={false}
           onSubmit={(values, actions) => {
-            console.log({ values, actions });
-            actions.setSubmitting(false);
+            dispatch(registerAsync(values)).then((res) => {
+              const { data } : any = res.payload;
+              Swal.fire({
+                position: "center",
+                icon: data.status,
+                title: data.message,
+                showConfirmButton: false,
+                timer: 1500,
+              }).then((result) => {
+                if (data.status === "success") {
+                  setModalOpen("");
+                }
+              });
+              actions.setSubmitting(false);
+            });
           }}
         >
-          {({ isSubmitting }) => {  
+          {({ isSubmitting }) => {
             return (
-              
-                <Form className="search-bar__form">
-                  <div className="form-group">
-                    <label htmlFor="email">Email</label>
-                    <Input
-                      id="email"
-                      name="email"
-                      type="email"
-                      className="form-control"
-                      placeholder="Nhập email của bạn"
-                    />
-                    <ErrorMessage name="email" component="div" className="text-xl text-red-500 mt-2" />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="username">Tên người dùng</label>
-                    <Input
-                      id="username"
-                      name="username"
-                      type="text"
-                      className="form-control"
-                      placeholder="Nhập tên của bạn"
-                    />
-                     <ErrorMessage name="username" component="div" className="text-xl text-red-500 mt-2" />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="password">Mật khẩu</label>
-                    <InputPasswordToggle />
-                    <ErrorMessage name="password" component="div" className="text-xl text-red-500 mt-2" />
-                  </div>
-                  <Button
-                    type="submit"
-                    isLoading={isSubmitting}
-                    disabled={isSubmitting}
-                    className="btn__custom btn__submit"
-                    width="100%"
-                    height="4.8rem"
-                  >
-                    Đăng ký
-                  </Button>
-                </Form>
+              <Form className="search-bar__form">
+                <div className="form-group">
+                  <label htmlFor="email">Email</label>
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    className="form-control"
+                    placeholder="Nhập email của bạn"
+                  />
+                  <ErrorMessage
+                    name="email"
+                    component="div"
+                    className="text-xl text-red-500 mt-2"
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="username">Tên người dùng</label>
+                  <Input
+                    id="username"
+                    name="username"
+                    type="text"
+                    className="form-control"
+                    placeholder="Nhập tên của bạn"
+                  />
+                  <ErrorMessage
+                    name="username"
+                    component="div"
+                    className="text-xl text-red-500 mt-2"
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="password">Mật khẩu</label>
+                  <InputPasswordToggle />
+                  <ErrorMessage
+                    name="password"
+                    component="div"
+                    className="text-xl text-red-500 mt-2"
+                  />
+                </div>
+                <Button
+                  type="submit"
+                  isLoading={isSubmitting}
+                  disabled={isSubmitting}
+                  className="btn__custom btn__submit"
+                  width="100%"
+                  height="4.8rem"
+                >
+                  Đăng ký
+                </Button>
+              </Form>
             );
           }}
         </Formik>

@@ -34,10 +34,10 @@ const TripPage = () => {
   return <TripPageStyles>
     <h2 className="title">Chuyến đi</h2>
       <ul className="menu-booking">
-        <li className={`menu-item ${booking_type === 'upcoming' ? 'active' : ''}`} onClick={() => navigate('/hosting/reservations/upcoming')}>Sắp tới</li>
-        <li className={`menu-item ${booking_type === 'confirmed' ? 'active' : ''}`} onClick={() => navigate('/hosting/reservations/confirmed')}>Đã xác nhận</li>
-        <li className={`menu-item ${booking_type === 'cancelled' ? 'active' : ''}`} onClick={() => navigate('/hosting/reservations/cancelled')}>Đã hủy</li>
-        <li className={`menu-item ${booking_type === 'all' ? 'active' : ''}`} onClick={() => navigate('/hosting/reservations/all')}>Tất cả</li>
+        <li className={`menu-item ${booking_type === 'upcoming' ? 'active' : ''}`} onClick={() => navigate('/trips/upcoming')}>Sắp tới</li>
+        <li className={`menu-item ${booking_type === 'confirmed' ? 'active' : ''}`} onClick={() => navigate('/trips/confirmed')}>Đã xác nhận</li>
+        <li className={`menu-item ${booking_type === 'cancelled' ? 'active' : ''}`} onClick={() => navigate('/trips/cancelled')}>Đã hủy</li>
+        <li className={`menu-item ${booking_type === 'all' ? 'active' : ''}`} onClick={() => navigate('/trips/all')}>Tất cả</li>
       </ul>
       <Outlet></Outlet>
   </TripPageStyles>;

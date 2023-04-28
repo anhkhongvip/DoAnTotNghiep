@@ -6,6 +6,7 @@ import categoryRouter from "./category.router";
 import homeRouter from "./home.router";
 import serviceRouter from "./service.router";
 import contractRouter from "./contract.router";
+import homeDayRouter from "./homeDay.router";
 
 const route = (app: Application) => {
   app.use("/api", authRouter);
@@ -15,6 +16,7 @@ const route = (app: Application) => {
   app.use("/api", homeRouter);
   app.use("/api", contractRouter);
   app.use("/api", serviceRouter);
+  app.use("/api", homeDayRouter);
 };
 
 export default route;

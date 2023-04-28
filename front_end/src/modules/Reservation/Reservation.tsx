@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
 import Table from "../../components/table/Table";
 import { useAppDispatch } from "../../app/hooks";
@@ -27,6 +27,9 @@ const ReservationStyles = styled.div`
     border-radius: 2rem;
     margin-right: 1rem;
     display: inline-block;
+    &.primary {
+      background-color: #00a8ff;
+    }
     &.success {
       background-color: green;
     }
@@ -55,9 +58,10 @@ const ReservationStyles = styled.div`
 const Reservation = () => {
   const { booking_type } = useParams();
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
   const [contracts, setContracts] = useState([]);
   useEffect(() => {
-    dispatch(getContractByHostAsync())
+    dispatch(getContractByHostAsync({ status: booking_type }))
       .then((res) => {
         const { contracts } = res.payload.data;
         setContracts(contracts);
@@ -124,43 +128,82 @@ const Reservation = () => {
                 <td>
                   {fommatCurrency("vi-VN", "VND").format(item?.total_money)}
                 </td>
-                <td>
-                  {item?.status === 1 ? (
-                    <>
+                {item?.status === 1 ? (
+                  <>
+                    <td>
                       <span className="status success"></span>
                       Đã xác nhận
-                    </>
-                  ) : (
-                    ""
-                  )}
-                  {item?.status === 2 ? (
-                    <>
+                    </td>
+                    <td>
+                      <button
+                        className="btn-work-to-do"
+                        onClick={() =>
+                          navigate(`/hosting/contracts/${item?.id}`)
+                        }
+                      >
+                        Chi tiết
+                      </button>
+                    </td>
+                  </>
+                ) : (
+                  ""
+                )}
+                {item?.status === 2 ? (
+                  <>
+                    <td>
                       <span className="status pending"></span>
                       Chờ xác nhận
-                    </>
-                  ) : (
-                    ""
-                  )}
-                  {item?.status === 3 ? (
-                    <>
-                      <span className="status danger"></span>
-                      Đã hủy
-                    </>
-                  ) : (
-                    ""
-                  )}
-                  {item?.status === 4 ? (
-                    <>
-                      <span className="status warning"></span>
-                      Chờ thanh toán
-                    </>
-                  ) : (
-                    ""
-                  )}
-                </td>
-                <td>
-                  <button className="btn-work-to-do">Đánh giá</button>
-                </td>
+                    </td>
+                    <td>
+                      <button
+                        className="btn-work-to-do"
+                        onClick={() =>
+                          navigate(`/hosting/contracts/${item?.id}`)
+                        }
+                      >
+                        Hoàn tất
+                      </button>
+                    </td>
+                  </>
+                ) : (
+                  ""
+                )}
+                {item?.status === 3 ? (
+                  <td>
+                    <span className="status danger"></span>
+                    Đã hủy
+                  </td>
+                ) : (
+                  ""
+                )}
+                {item?.status === 4 ? (
+                  <td>
+                    <span className="status warning"></span>
+                    Chờ thanh toán
+                  </td>
+                ) : (
+                  ""
+                )}
+                {item?.status === 5 ? (
+                  <>
+                    <td>
+                      <span className="status primary"></span>
+                      Đã trả phòng
+                    </td>
+                    <td>
+                      <button
+                        className="btn-work-to-do"
+                        onClick={() =>
+                          navigate(`/hosting/contracts/${item?.id}`)
+                        }
+                      >
+                        Chi tiết
+                      </button>
+                    </td>
+                  </>
+                ) : (
+                  ""
+                )}
               </tr>
             ))}
           </tbody>
