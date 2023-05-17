@@ -3,7 +3,7 @@ import styled from "styled-components";
 import useOnClickOutside from "../../hooks/useClickOutside";
 const DropdownStyles = styled.div`
   position: relative;
-  margin-top: 2rem;
+  
   .dropdown {
     &__heading {
       border-radius: 1rem;

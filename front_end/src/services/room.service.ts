@@ -51,10 +51,10 @@ const findRoomsAsync = createAsyncThunk(
   async (data: any) => {
     let query: string = "";
     for (const element in data) {
-      if (element) {
-        query += `${element}=${data[element]}`;
-      } else {
+      if (query) {
         query += `&${element}=${data[element]}`;
+      } else {
+        query += `${element}=${data[element]}`;
       }
     }
     const res = await axios.get(
@@ -99,6 +99,26 @@ const findImageByHomeId = createAsyncThunk(
   }
 );
 
+const findHomeByQuery = createAsyncThunk(
+  "room/findHomeByQueryAsync",
+  async (query: string) => {
+    const res = await axios.get(
+      `${process.env.REACT_APP_URL}/api/search/${query}`
+    );
+    return res.data;
+  }
+);
+
+const getAmountHomeByCategory = createAsyncThunk(
+  "room/getAmountHomeByCategory",
+  async () => {
+    const res = await axios.get(
+      `${process.env.REACT_APP_URL}/api/amount-home-by-category`
+    );
+    return res.data;
+  }
+);
+
 export {
   createRoomAsync,
   updateRoomAsync,
@@ -106,5 +126,7 @@ export {
   findServiceByHomeId,
   findImageByHomeId,
   findRoomByHostAsync,
-  findRoomsAsync
+  findRoomsAsync,
+  findHomeByQuery,
+  getAmountHomeByCategory,
 };

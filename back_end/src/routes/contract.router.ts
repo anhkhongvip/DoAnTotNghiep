@@ -6,6 +6,7 @@ contractRouter.post('/contracts', authTokenMiddleware,contractController.createC
 contractRouter.get('/contracts/host', authTokenMiddleware, contractController.getContractByHost);
 contractRouter.get('/contracts/guest', authTokenMiddleware, contractController.getContractByGuest);
 contractRouter.get('/contracts/find-contract', authTokenMiddleware, contractController.findContract);
+contractRouter.get('/contracts/find-contract-by-query', authTokenMiddleware, contractController.findContractByQuery);
 contractRouter.get('/contracts/:contract_id', authTokenMiddleware, contractController.getContractById);
 contractRouter.put('/contracts/:contract_id', authTokenMiddleware, contractController.updateContract);
 export default contractRouter;

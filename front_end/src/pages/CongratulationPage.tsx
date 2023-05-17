@@ -101,6 +101,8 @@ const CongratulationPage = () => {
       .then((res) => {
         const { contract } = res.payload.data;
         if (contract[0]) {
+          console.log(contract[0]);
+          
           setContract(contract[0]);
           dispatch(findRoomByIdAsync(contract[0].home_id))
             .then((res) => {
@@ -125,7 +127,9 @@ const CongratulationPage = () => {
           <div className="group flex items-center">
             <p className="description">
               {" "}
-              Phòng của bạn đã được đặt. Hãy đợi chủ nhà xác nhận
+              {contract?.status === 1 ?  "Phòng của bạn đã được xác nhận. Chúc bạn có một chuyến đi vui vẻ" : ""}
+              {contract?.status === 2 ? "Phòng của bạn đã được đặt. Hãy đợi chủ nhà xác nhận" : ''}
+              {contract?.status === 3 ? "Phòng của bạn đã bị hủy. Chúng tôi sẽ hoàn tiền cho bạn trong thời gian sớm nhất" : ''}
             </p>
           </div>
 
@@ -133,7 +137,10 @@ const CongratulationPage = () => {
             <div className="home-info">
               <div className="group flex justify-between items-center">
                 <div className="title">{home?.title}</div>
-                <div className="btn-status pending">Chờ xác nhận</div>
+                {contract?.status === 1 ? <div className={`btn-status success`}>Đã xác nhận</div> : ''}
+                {contract?.status === 2 ? <div className={`btn-status pending`}>Chờ xác nhận</div> : ''}
+                {contract?.status === 3 ? <div className={`btn-status danger`}>Đã hủy</div> : ''}
+                
               </div>
 
               <div className="floor-plan">

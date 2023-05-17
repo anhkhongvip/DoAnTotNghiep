@@ -53,6 +53,7 @@ interface itemCategory {
   id: number;
   name: string;
   image: string;
+  amount: number;
 }
 
 type Props = {
@@ -73,7 +74,7 @@ const CategoryCard = ({ item, children }: Props) => {
         <div className="category-card__info">
           <h3 className="title">{item.name}</h3>
           <span className="amount">
-            {1000} {item.name}
+            {item.amount} {item.name}
           </span>
         </div>
       </Link>

@@ -353,7 +353,6 @@ const HomeStayPage = () => {
         Math.abs(ev.value[0] - ev.value[1]) / (1000 * 60 * 60 * 24)
       );
       console.log(data);
-
       setData({
         ...data,
         total_money: dayDiff * home?.price,

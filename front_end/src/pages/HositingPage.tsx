@@ -5,13 +5,12 @@ import Table from "../components/table/Table";
 import { useAppDispatch } from "../app/hooks";
 import { findRoomByHostAsync } from "../services/room.service";
 const HositingPageStyles = styled.div`
-  max-width: 153.6rem;
-  margin: 0 auto;
   margin-top: 5rem;
   padding: 0 3rem;
   .host-listings {
     &-header {
       display: flex;
+      width: 100%;
       justify-content: space-between;
       .title {
         font-weight: bold;

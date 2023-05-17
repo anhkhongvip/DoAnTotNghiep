@@ -47,13 +47,14 @@ type Props = {
   id?: string;
   name?: string;
   value?: string;
+  onClick?: () => void;
 };
 const Checkbox = ({ children, ...props }: Props) => {
   return (
     <CheckboxStyles>
       <div className="checkbox">
-        <input type="checkbox" {...props} className="checkbox__input" />
-        <label htmlFor={props.id} className="checkbox__label">
+        <input type="checkbox" {...props} className="checkbox__input" onClick={props.onClick}/>
+        <label htmlFor={props.id} className="checkbox__label" >
           {children}
         </label>
       </div>

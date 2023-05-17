@@ -9,4 +9,6 @@ homeRouter.get('/find-home', homeControllers.findHomes);
 homeRouter.get('/find-service/:room_id', homeControllers.findServiceByHomeId);
 homeRouter.get('/find-image/:room_id', homeControllers.findImageByHomeId);
 homeRouter.get('/find-home-by-host', authTokenMiddleware, homeControllers.getHomeByAccountId);
+homeRouter.get('/amount-home-by-category', homeControllers.getAmountHomeByCategory)
+homeRouter.get('/search', homeControllers.findHomeByQuery)
 export default homeRouter;

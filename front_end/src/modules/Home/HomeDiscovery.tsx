@@ -7,6 +7,7 @@ import "swiper/css/autoplay";
 import categoryList from "../../assets/JsonData/category-list.json";
 import { useAppDispatch } from "../../app/hooks";
 import { getCategoriesAsync } from "../../services/category.service";
+import { getAmountHomeByCategory } from "../../services/room.service";
 const HomeDiscoveryStyles = styled.div`
   margin-top: 7rem;
   .home-discovery {
@@ -26,7 +27,9 @@ const HomeDiscovery = () => {
     async function fetchCategories() {
       let {
         payload: { data },
-      } = await dispatch(getCategoriesAsync());
+      } = await dispatch(getAmountHomeByCategory());
+      console.log(data);
+      
       setCategories([...data.categories, ...data.categories]);
     }
     fetchCategories();

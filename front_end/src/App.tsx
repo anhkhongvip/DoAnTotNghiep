@@ -34,6 +34,10 @@ import ContractDetail from "./modules/Contract/ContractDetail";
 import { useAppSelector } from "./app/hooks";
 import { selectAccount } from "./features/account/accountSlice";
 import ItineraryPage from "./modules/Contract/Itinerary";
+import TransactionHistoryPage from "./pages/TransactionHistoryPage";
+import Transaction from "./modules/Transaction/Transaction";
+import HomeFilter from "./modules/Home/HomeFilter";
+
 
 function App() {
   const { account } = useAppSelector(selectAccount);
@@ -46,6 +50,10 @@ function App() {
             <Route
               path="rooms/:room_id"
               element={<HomeDetail></HomeDetail>}
+            ></Route>
+            <Route
+              path="search"
+              element={<HomeFilter></HomeFilter>}
             ></Route>
             <Route
               path="book/stays/:room_id"
@@ -75,8 +83,16 @@ function App() {
                     path="contracts/:contract_id"
                     element={<ContractDetail></ContractDetail>}
                   ></Route>
+                  <Route
+                    path="transaction_history/:transaction_type/"
+                    element={<TransactionHistoryPage></TransactionHistoryPage>}
+                  >
+                    <Route
+                      path=""
+                      element={<Transaction></Transaction>}
+                    ></Route>
+                  </Route>
                 </Route>
-
                 <Route
                   path="trips/:booking_type/"
                   element={<TripPage></TripPage>}

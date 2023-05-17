@@ -114,10 +114,10 @@ const Description = ({ description, setToogleUpdate, toogleUpdate }: Props) => {
     }
   };
   useEffect(() => {
-    if (content.length > 500 || content.length === 0) {
+    if (content?.length > 500 || content?.length === 0) {
       setCheck(false);
       setIsError(true);
-    } else if (description.trim() === content) {
+    } else if (description?.trim() === content) {
       setCheck(false);
       setIsError(false);
     } else {
@@ -127,7 +127,7 @@ const Description = ({ description, setToogleUpdate, toogleUpdate }: Props) => {
   }, [content]);
 
   useEffect(() => {
-    setContent(description.trim());
+    setContent(description?.trim());
   }, []);
   return (
     <DescriptionStyles>
@@ -160,14 +160,14 @@ const Description = ({ description, setToogleUpdate, toogleUpdate }: Props) => {
                 <path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0zm0 10.2a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm.8-6.6H7.2v5.2h1.6z"></path>
               </svg>
               <span className="ml-2">
-                {content.length !== 0
+                {content?.length !== 0
                   ? "Số ký tự tối đa cho phép là 500"
                   : "Đây là trường bắt buộc vui lòng nhập một giá trị"}
               </span>
             </div>
           ) : null}
 
-          <div className="content-length">{content?.length}/500</div>
+          <div className="content-length">{content?.length ? content.length : 0}/500</div>
         </div>
         <button className="homeUpdate__close" onClick={handleClose}>
           <i className="fa-regular fa-x"></i>

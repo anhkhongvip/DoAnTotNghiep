@@ -47,7 +47,7 @@ const findContractsAsync = createAsyncThunk(
         query += `${element}=${data[element]}`;
       }
     }
-  
+
     const res = await axios.get(
       `${process.env.REACT_APP_URL}/api/contracts/find-contract?${query}`,
       {
@@ -119,11 +119,40 @@ const getContractByGuestAsync = createAsyncThunk(
   }
 );
 
+const findContractByQueryAsync = createAsyncThunk(
+  "contract/findContractByQueryAsync",
+  async (data: any) => {
+    let query = "";
+    for (const element in data) {
+      if (query) {
+        query += `&${element}=${data[element]}`;
+      } else {
+        query += `${element}=${data[element]}`;
+      }
+    }
+    try {
+      const res: any = await axios.get(
+        `${process.env.REACT_APP_URL}/api/contracts/find-contract-by-query?${query}`,
+        {
+          headers: {
+            authorization: localStorage.getItem("token"),
+          },
+        }
+      );
+      return res.data;
+    } catch (error: any) {
+      return error.response.data;
+    }
+  }
+);
+
 export {
   createContractAsync,
   findContractByIdAsync,
   findContractsAsync,
+  findContractByQueryAsync,
   updateContractAsync,
   getContractByHostAsync,
   getContractByGuestAsync,
+  
 };

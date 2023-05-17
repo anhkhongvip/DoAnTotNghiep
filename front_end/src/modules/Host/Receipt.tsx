@@ -147,7 +147,7 @@ const Receipt = ({ step }: Props) => {
                 <div className="group">
                   <h2 className="room-preview-title">{home?.title}</h2>
                   <div className="room-preview-price">
-                    <b>₫{home?.price}</b> đêm
+                    <b>₫{home?.price}</b> / đêm
                   </div>
                 </div>
                 <div className="room-preview-rate">

@@ -7,24 +7,29 @@ const RatingStyles = styled.div`
   }
 `;
 type Props = {
+  name: string;
   totalStars: number;
+  data: any;
+  setData: (data: any) => void;
 };
-const Rating = ({ totalStars }: Props) => {
-  const [selectedStars, setSelectedStars] = useState<number>(0);
+const Rating = ({ totalStars, name, data, setData }: Props) => {
+  //const [selectedStars, setSelectedStars] = useState<number>(0);
   const [isSelecteStar, setIsSelecteStar] = useState<boolean>(false);
   const stars = Array.from({ length: totalStars }, (_, index) => index + 1);
   const handleSelectedStars = (star: number) => {
-    if (star !== selectedStars) {
+    if (star !== data[name]) {
       setIsSelecteStar(true);
     } else {
       setIsSelecteStar(!isSelecteStar);
     }
-    setSelectedStars(star);
+    setData({ ...data, [name]: star });
+    //setSelectedStars(star);
   };
-  
+
   const handleStarLeave = () => {
     if (!isSelecteStar) {
-      setSelectedStars(0);
+      setData({ ...data, [name]: 0 });
+      // setSelectedStars(0);
     }
   };
   return (
@@ -33,15 +38,13 @@ const Rating = ({ totalStars }: Props) => {
         {stars.map((star: number) => (
           <Star
             key={star}
-            selected={star <= selectedStars}
+            selected={star <= data[name]}
             onSelect={() => handleSelectedStars(star)}
             onMouseLeave={handleStarLeave}
           />
         ))}
       </div>
-      <p>
-        {selectedStars} / {totalStars} sao
-      </p>
+      <p>{data[name]} / {totalStars} sao</p>
     </RatingStyles>
   );
 };

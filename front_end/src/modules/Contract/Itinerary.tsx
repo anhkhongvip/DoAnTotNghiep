@@ -356,7 +356,10 @@ const ItineraryPage = () => {
             )}
 
             {contract?.status === 5 && contract?.status_review === 2 ? (
-              <button className="btn-default danger ml-10" onClick={() => setToggle(true)}>
+              <button
+                className="btn-default danger ml-10"
+                onClick={() => setToggle(true)}
+              >
                 Đánh giá ngay
               </button>
             ) : (
@@ -366,12 +369,17 @@ const ItineraryPage = () => {
         </div>
       </div>
       <Modal
-          title="Đánh giá"
-          toggle={toggle}
-          closeFn={(event) => closeModal(event)}
-        >
-          <Review></Review>
-        </Modal>
+        title="Đánh giá"
+        toggle={toggle}
+        closeFn={(event) => closeModal(event)}
+      >
+        <Review
+          setToggle={setToggle}
+          contract={contract}
+          setContract={setContract}
+          review_id={contract?.review_id}
+        ></Review>
+      </Modal>
     </ItineraryPageStyles>
   );
 };

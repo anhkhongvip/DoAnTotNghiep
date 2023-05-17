@@ -212,8 +212,8 @@ const ContractDetail = () => {
       cancelButtonText: "Quay lại",
     }).then((result) => {
       if (result.isConfirmed) {
-        dispatch(updateContractAsync({ status: 5, contract_id }))
-          .then((res) => {
+        dispatch(updateContractAsync({ status: 5, contract_id, account_id: contract.account_id, home_id: contract.home_id}))
+          .then((res: any) => {
             let { data } = res.payload;
             Swal.fire({
               position: "center",
@@ -359,7 +359,7 @@ const ContractDetail = () => {
               <div className="group flex mt-10 status-confirm">
                 {contract?.status === 1 && (
                   <>
-                    {Date.parse(contract?.checkin) > Date.now() ? (
+                    {/* {Date.parse(contract?.checkin) > Date.now() ? (
                       <>
                         <div className="group flex">
                           <button
@@ -385,7 +385,13 @@ const ContractDetail = () => {
                           Xác nhận trả phòng
                         </button>
                       </>
-                    )}
+                    )} */}
+                     <button
+                          className="btn-status status-wait-confirm mr-10"
+                          onClick={handleConfirmCheckout}
+                        >
+                          Xác nhận trả phòng
+                        </button>
                   </>
                 )}
                 {contract?.status === 2 && (

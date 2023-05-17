@@ -1,9 +1,11 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useEffect } from "react";
+import { Link, useLocation } from "react-router-dom";
 import styled from "styled-components";
 import HomeHeaderRouter from "./HomeHeaderRouter";
-import HomeFilter from "./HomeFilter";
+import HomeFilter from "../../components/sidebar/SidebarSearch";
 import HomeItem from "./HomeItem";
+import { useAppDispatch } from "../../app/hooks";
+import { findHomeByQuery } from "../../services/room.service";
 const HomeListStyles = styled.div`
   .home {
     &-body {
@@ -29,6 +31,7 @@ const HomeListStyles = styled.div`
   }
 `;
 const HomeList = () => {
+  
   return (
     <HomeListStyles>
       <div className="container">

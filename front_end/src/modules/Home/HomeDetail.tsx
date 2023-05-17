@@ -21,6 +21,7 @@ import { Datepicker, getJson, localeVi } from "@mobiscroll/react";
 import { GoogleMap, useJsApiLoader } from "@react-google-maps/api";
 import { fommatCurrency } from "../../configs/formatCurrency";
 import { findContractsAsync } from "../../services/contract.service";
+import HomeReview from "./HomeReview";
 
 const HomeDetailStyles = styled.div`
   .home {
@@ -192,6 +193,10 @@ const HomeDetail = () => {
     totalDay: 0,
     totalGuest: 1,
   });
+  const [reviewData, setReviewData] = useState<any>({
+    countReview: 0,
+    overallReview: 0,
+  });
   const [data, setData] = useState<any>({
     checkin: null,
     checkout: null,
@@ -201,12 +206,6 @@ const HomeDetail = () => {
   });
   let infowindow: any = null;
   const [markers, setMarkers] = useState<any>([]);
-
-  // const onPageLoadingMultiple = React.useCallback((event: any, inst: any) => {
-  //   getBookings(event.firstDay, (bookings: any) => {
-  //     setMultipleInvalid(bookings.invalid);
-  //   });
-  // }, []);
 
   const handleClickUp = (name: NameObject) => {
     setData({ ...data, [name]: data[name] + 1 });
@@ -221,7 +220,7 @@ const HomeDetail = () => {
     }
   };
 
-  const handleChange = useCallback((ev: any) => {
+  const handleChange = (ev: any) => {
     if (ev.value[0] && ev.value[1]) {
       let dayDiff = Math.round(
         Math.abs(ev.value[0] - ev.value[1]) / (1000 * 60 * 60 * 24)
@@ -237,7 +236,7 @@ const HomeDetail = () => {
       checkin: format(new Date(ev.value[0]), "yyyy-MM-dd"),
       checkout: format(new Date(ev.value[1]), "yyyy-MM-dd"),
     });
-  }, []);
+  };
 
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: "AIzaSyDzzi_VBcf2Oef6LTViLU767UPNHlnIze4",
@@ -327,8 +326,15 @@ const HomeDetail = () => {
           <h2 className="home-title">{home?.title}</h2>
           <div className="home-rate-location flex items-center">
             <div className="room_content__rate-star mr-2">
-              <i className="fa-solid fa-star" style={{ color: "#ffc542" }}></i>{" "}
-              <span>4.8</span> (122 đánh giá)
+              <i className="fa-solid fa-star" style={{ color: "#ffc542" }}></i>
+              {reviewData?.countReview > 0 ? (
+                <>
+                  <span>{reviewData?.overallReview.toFixed(1)}</span> (
+                  {reviewData?.countReview} đánh giá)
+                </>
+              ) : (
+                <span className="ml-2">Mới</span>
+              )}
             </div>
             <div className="room-location ml-10">
               <svg
@@ -427,129 +433,137 @@ const HomeDetail = () => {
                     rangeStartLabel="Ngày đến"
                     rangeEndLabel="Ngày trả"
                     locale={localeVi}
-                    min={new Date(new Date().getTime() + 1 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)}
-                    // min={Date.now}
+                    min={new Date(
+                      new Date().getTime() + 1 * 24 * 60 * 60 * 1000
+                    )
+                      .toISOString()
+                      .slice(0, 10)}
                     minRange={home?.minimumTime}
                     maxRange={home?.maximumTime}
                     width={`200px`}
                     rangeHighlight={true}
                     controls={["calendar"]}
                     invalid={multipleInvalid}
-                    //onPageLoading={onPageLoadingMultiple}
                   />
                 </div>
               </div>
-              <Dropdown
-                labelHeader="Khách"
-                labelName={`${total.totalGuest} khách${
-                  data.numberOfInfants > 0
-                    ? `, ${data.numberOfInfants} em bé`
-                    : ""
-                }`}
-              >
-                <div className="dropdown__content--item-style-2 ">
-                  <div className="group flex items-center justify-between">
-                    <div className="group">
-                      <h3 className="dropdown-item__title">Người lớn</h3>
-                      <p className="dropdown-item__desc">Từ 13 tuổi trở lên</p>
-                    </div>
-                    <div className="dropdown-info flex items-center">
-                      <button
-                        type="button"
-                        disabled={!(data.numberOfAdults !== 1)}
-                        className={`btn btn-tool btn-decrease ${
-                          data.numberOfAdults !== 1 ? " " : "not-allow"
-                        }`}
-                        onClick={() => handleClickDown("numberOfAdults")}
-                      >
-                        <i className="fa-regular fa-minus"></i>
-                      </button>
+              <div className="mt-7">
+                <Dropdown
+                  labelHeader="Khách"
+                  labelName={`${total.totalGuest} khách${
+                    data.numberOfInfants > 0
+                      ? `, ${data.numberOfInfants} em bé`
+                      : ""
+                  }`}
+                >
+                  <div className="dropdown__content--item-style-2 ">
+                    <div className="group flex items-center justify-between">
+                      <div className="group">
+                        <h3 className="dropdown-item__title">Người lớn</h3>
+                        <p className="dropdown-item__desc">
+                          Từ 13 tuổi trở lên
+                        </p>
+                      </div>
+                      <div className="dropdown-info flex items-center">
+                        <button
+                          type="button"
+                          disabled={!(data.numberOfAdults !== 1)}
+                          className={`btn btn-tool btn-decrease ${
+                            data.numberOfAdults !== 1 ? " " : "not-allow"
+                          }`}
+                          onClick={() => handleClickDown("numberOfAdults")}
+                        >
+                          <i className="fa-regular fa-minus"></i>
+                        </button>
 
-                      <span className="quantity">{data.numberOfAdults}</span>
+                        <span className="quantity">{data.numberOfAdults}</span>
 
-                      <button
-                        type="button"
-                        disabled={!(total.totalGuest < home?.max_passenger)}
-                        className={`btn btn-tool btn-increase ${
-                          total.totalGuest < home?.max_passenger
-                            ? " "
-                            : "not-allow"
-                        }`}
-                        onClick={() => handleClickUp("numberOfAdults")}
-                      >
-                        <i className="fa-regular fa-plus"></i>
-                      </button>
+                        <button
+                          type="button"
+                          disabled={!(total.totalGuest < home?.max_passenger)}
+                          className={`btn btn-tool btn-increase ${
+                            total.totalGuest < home?.max_passenger
+                              ? " "
+                              : "not-allow"
+                          }`}
+                          onClick={() => handleClickUp("numberOfAdults")}
+                        >
+                          <i className="fa-regular fa-plus"></i>
+                        </button>
+                      </div>
                     </div>
+                    <div className="group flex items-center justify-between mt-7">
+                      <div className="group">
+                        <h3 className="dropdown-item__title">Trẻ em</h3>
+                        <p className="dropdown-item__desc">Độ tuổi 2 - 12</p>
+                      </div>
+                      <div className="dropdown-info flex items-center">
+                        <button
+                          type="button"
+                          disabled={!(data.numberOfChildrens > 0)}
+                          className={`btn btn-tool btn-decrease ${
+                            data.numberOfChildrens > 0 ? " " : "not-allow"
+                          }`}
+                          onClick={() => handleClickDown("numberOfChildrens")}
+                        >
+                          <i className="fa-regular fa-minus"></i>
+                        </button>
+
+                        <span className="quantity">
+                          {data.numberOfChildrens}
+                        </span>
+
+                        <button
+                          type="button"
+                          disabled={!(total.totalGuest < home?.max_passenger)}
+                          className={`btn btn-tool btn-increase ${
+                            total.totalGuest < home?.max_passenger
+                              ? " "
+                              : "not-allow"
+                          }`}
+                          onClick={() => handleClickUp("numberOfChildrens")}
+                        >
+                          <i className="fa-regular fa-plus"></i>
+                        </button>
+                      </div>
+                    </div>
+                    <div className="group flex items-center justify-between mt-7">
+                      <div className="group">
+                        <h3 className="dropdown-item__title">Em bé</h3>
+                        <p className="dropdown-item__desc">Dưới 2 tuổi</p>
+                      </div>
+                      <div className="dropdown-info flex items-center">
+                        <button
+                          type="button"
+                          disabled={!(data.numberOfInfants > 0)}
+                          className={`btn btn-tool btn-decrease ${
+                            data.numberOfInfants > 0 ? "" : "not-allow"
+                          }`}
+                          onClick={() => handleClickDown("numberOfInfants")}
+                        >
+                          <i className="fa-regular fa-minus"></i>
+                        </button>
+
+                        <span className="quantity">{data.numberOfInfants}</span>
+                        <button
+                          type="button"
+                          disabled={!(data.numberOfInfants < 5)}
+                          className={`btn btn-tool btn-increase ${
+                            data.numberOfInfants < 5 ? "" : "not-allow"
+                          }`}
+                          onClick={() => handleClickUp("numberOfInfants")}
+                        >
+                          <i className="fa-regular fa-plus"></i>
+                        </button>
+                      </div>
+                    </div>
+                    <p className="attention-title">
+                      Chỗ ở này cho phép tối đa {home?.max_passenger} khách,
+                      không tính em bé. Không được phép mang theo thú cưng.
+                    </p>
                   </div>
-                  <div className="group flex items-center justify-between mt-7">
-                    <div className="group">
-                      <h3 className="dropdown-item__title">Trẻ em</h3>
-                      <p className="dropdown-item__desc">Độ tuổi 2 - 12</p>
-                    </div>
-                    <div className="dropdown-info flex items-center">
-                      <button
-                        type="button"
-                        disabled={!(data.numberOfChildrens > 0)}
-                        className={`btn btn-tool btn-decrease ${
-                          data.numberOfChildrens > 0 ? " " : "not-allow"
-                        }`}
-                        onClick={() => handleClickDown("numberOfChildrens")}
-                      >
-                        <i className="fa-regular fa-minus"></i>
-                      </button>
-
-                      <span className="quantity">{data.numberOfChildrens}</span>
-
-                      <button
-                        type="button"
-                        disabled={!(total.totalGuest < home?.max_passenger)}
-                        className={`btn btn-tool btn-increase ${
-                          total.totalGuest < home?.max_passenger
-                            ? " "
-                            : "not-allow"
-                        }`}
-                        onClick={() => handleClickUp("numberOfChildrens")}
-                      >
-                        <i className="fa-regular fa-plus"></i>
-                      </button>
-                    </div>
-                  </div>
-                  <div className="group flex items-center justify-between mt-7">
-                    <div className="group">
-                      <h3 className="dropdown-item__title">Em bé</h3>
-                      <p className="dropdown-item__desc">Dưới 2 tuổi</p>
-                    </div>
-                    <div className="dropdown-info flex items-center">
-                      <button
-                        type="button"
-                        disabled={!(data.numberOfInfants > 0)}
-                        className={`btn btn-tool btn-decrease ${
-                          data.numberOfInfants > 0 ? "" : "not-allow"
-                        }`}
-                        onClick={() => handleClickDown("numberOfInfants")}
-                      >
-                        <i className="fa-regular fa-minus"></i>
-                      </button>
-
-                      <span className="quantity">{data.numberOfInfants}</span>
-                      <button
-                        type="button"
-                        disabled={!(data.numberOfInfants < 5)}
-                        className={`btn btn-tool btn-increase ${
-                          data.numberOfInfants < 5 ? "" : "not-allow"
-                        }`}
-                        onClick={() => handleClickUp("numberOfInfants")}
-                      >
-                        <i className="fa-regular fa-plus"></i>
-                      </button>
-                    </div>
-                  </div>
-                  <p className="attention-title">
-                    Chỗ ở này cho phép tối đa {home?.max_passenger} khách, không
-                    tính em bé. Không được phép mang theo thú cưng.
-                  </p>
-                </div>
-              </Dropdown>
+                </Dropdown>
+              </div>
 
               <button
                 className={`btn btn-booking-submit ${
@@ -593,8 +607,12 @@ const HomeDetail = () => {
               ) : null}
             </div>
           </div>
+          <HomeReview
+            home_id={home?.id}
+            setReviewData={setReviewData}
+          ></HomeReview>
           <div className="home-map">
-            <h2 className="home-map-title mt-16">Nơi bạn sẽ đến</h2>
+            <h2 className="home-map-title">Nơi bạn sẽ đến</h2>
             {isLoaded && home && (
               <GoogleMap
                 onLoad={(map) => setMap(map)}

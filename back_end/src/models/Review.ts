@@ -1,4 +1,10 @@
-import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from "typeorm";
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  OneToMany,
+  UpdateDateColumn,
+} from "typeorm";
 
 @Entity("reviews")
 export class Review {
@@ -17,7 +23,7 @@ export class Review {
   @Column({ type: "int", nullable: true })
   public accuracy_rating: number | null; // mức độ chính xác thông tin của phòng
 
-  @Column({ type: "int", nullable: true })
+  @Column({ type: "float", nullable: true })
   public overall_rating: number | null; // đại diện cho điểm số chung của phòng trên các tiêu chí đánh giá khác nhau
 
   @Column({ type: "varchar", nullable: true })
@@ -28,6 +34,16 @@ export class Review {
 
   @Column({ type: "int" })
   public account_id: number;
+
+  @Column({ type: "int" })
+  public contract_id: number;
+
+  @UpdateDateColumn({
+    type: "timestamp",
+    default: () => "CURRENT_TIMESTAMP(6)",
+    onUpdate: "CURRENT_TIMESTAMP(6)",
+  })
+  public updated_at: Date;
 
   @Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP" }) // Recommended
   created_at: Date;

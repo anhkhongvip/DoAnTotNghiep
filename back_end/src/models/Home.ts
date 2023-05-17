@@ -52,8 +52,8 @@ export class Home {
   @Column({ type: "int", default: 3 }) // 1: Đã đăng - 2: Đã hủy - 3: Đang tiến hành
   public status: string;
 
-  @Column({ type: "varchar", length: 200, default: '' })
-  public description: string;
+  @Column({ type: "text", nullable: true })
+  public description: string | null;
 
   @Column({ type: "int", default: 1 })
   public minimumTime: number; // thời gian ở tối thiểu

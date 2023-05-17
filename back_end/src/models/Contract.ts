@@ -1,5 +1,5 @@
 import { Account } from "./Account";
-import { Entity, Column, PrimaryGeneratedColumn } from "typeorm";
+import { Entity, Column, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 @Entity("contracts")
 export class Contract {
@@ -38,10 +38,13 @@ export class Contract {
   public home_id: number;
 
   @Column({ type: "int", nullable: true })
-  public review_id: number | null;;
+  public review_id: number | null;
 
   @Column({ type: "int" })
   public account_id: number;
+
+  @UpdateDateColumn({ type: "timestamp", default: () => "CURRENT_TIMESTAMP(6)", onUpdate: "CURRENT_TIMESTAMP(6)" })
+  public updated_at: Date;
 
   @Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP" }) // Recommended
   created_at: Date;

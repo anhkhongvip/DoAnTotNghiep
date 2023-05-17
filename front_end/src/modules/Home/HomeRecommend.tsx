@@ -16,8 +16,8 @@ const HomeRecommendedStyles = styled.div`
     &__item {
       border-radius: 0.8rem;
       padding: 1rem 1rem;
-      margin-left: 2.5rem;
-      width: calc(100% / 4);
+      margin-left: 1rem;
+      width: calc(100% / 4 - 1rem);
       cursor: pointer;
     }
     &__image {
@@ -31,12 +31,16 @@ const HomeRecommendedStyles = styled.div`
         font-size: 1.5rem;
         color: gray;
       }
+      .title {
+        width: 80%;
+      }
     }
     &__rating {
     }
 
     &__content {
-      margin-left: -2.5rem;
+      margin-left: -1rem;
+      flex-wrap: wrap;
       .title {
         font-size: 2rem;
         font-weight: 600;

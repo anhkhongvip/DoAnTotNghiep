@@ -1,5 +1,6 @@
 import React from "react";
 import styled from "styled-components";
+import { fommatCurrency } from "../../configs/formatCurrency";
 const HomeItemStyles = styled.div`
   display: flex;
   margin-bottom: 3rem;
@@ -9,11 +10,15 @@ const HomeItemStyles = styled.div`
       overflow: hidden;
       width: 37rem;
       height: 30rem;
+      flex-shrink: 0;
     }
     &-content {
       padding: 0 2rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
       &__title {
-        font-size: 4rem;
+        font-size: 2.5rem;
         font-weight: bold;
       }
     }
@@ -41,7 +46,7 @@ const HomeItemStyles = styled.div`
       &-price {
         font-size: 2rem;
         small {
-          color:gray;
+          color: gray;
         }
       }
       &-btn {
@@ -54,20 +59,31 @@ const HomeItemStyles = styled.div`
     }
   }
 `;
-const HomeItem = () => {
+type Props = {
+  item?: any;
+};
+const HomeItem = ({ item, ...props }: Props) => {
   return (
     <HomeItemStyles>
       <div className="room-image">
-        <img
-          src="https://a0.muscache.com/im/pictures/e25a9b25-fa98-4160-bfd1-039287bf38b6.jpg?im_w=1200"
-          alt=""
-        />
+        <img src={item?.image_main} alt="" />
       </div>
       <div className="room-content">
-        <h2 className="room-content__title">Santorini Hạ Long Villa</h2>
+        <h2 className="room-content__title">{item?.title}</h2>
         <div className="room_content__rate-star">
           <i className="fa-solid fa-star" style={{ color: "#ffc542" }}></i>{" "}
-          <span>4.8</span> (122 reviews)
+          {item?.rate_star ? (
+            <>
+              <span>
+                {(
+                  Number(item?.rate_star) / Number(item?.amount_reviews)
+                ).toFixed(1)}
+              </span>{" "}
+              ({item?.amount_reviews} đánh giá)
+            </>
+          ) : (
+            "Mới"
+          )}
         </div>
         <div className="room-location">
           <svg
@@ -82,44 +98,12 @@ const HomeItem = () => {
               fill="#84878B"
             />
           </svg>
-          <h2 className="room-location-title">Thành phố Đà Nẵng, Việt Nam</h2>
+          <h2 className="room-location-title">{item?.address}</h2>
         </div>
-        <div className="room-info flex justify-between">
-          <div className="room-services">
-            <ul className="room-services__list">
-              <li className="room-services__item">
-                <div className="room-services__item--icon">
-                  <i className="fa-light fa-wifi"></i>
-                </div>
-                <div className="room-services__item--title">Wifi miễn phí</div>
-              </li>
-              <li className="room-services__item">
-                <div className="room-services__item--icon">
-                  <i className="fa-light fa-circle-parking"></i>
-                </div>
-                <div className="room-services__item--title">
-                  Chỗ để xe miễn phí
-                </div>
-              </li>
-              <li className="room-services__item">
-                <div className="room-services__item--icon">
-                  <i className="fa-light fa-gift"></i>
-                </div>
-                <div className="room-services__item--title">
-                  Ưu đãi đặc biệt
-                </div>
-              </li>
-              <li className="room-services__item">
-                <div className="room-services__item--icon">
-                  <i className="fa-light fa-spa"></i>
-                </div>
-                <div className="room-services__item--title">Spa</div>
-              </li>
-            </ul>
-          </div>
+        <div className="room-info">
           <div className="room-booking flex flex-col justify-end">
             <span className="room-booking-price text-center">
-              1200000 VNĐ<small>/ Đêm</small>
+            {fommatCurrency("vi-VN", "VND").format(item?.price)}<small>/ Đêm</small>
             </span>
             <button className="btn room-booking-btn">Đặt ngay</button>
           </div>

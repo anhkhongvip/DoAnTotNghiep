@@ -279,6 +279,7 @@ class HomeController {
       });
     }
   };
+
   findImageByHomeId = async (req: Request, res: Response) => {
     try {
       const images = await AppDataSource.getRepository(Home_Image).findBy({
@@ -288,7 +289,7 @@ class HomeController {
         return res.status(200).json({
           data: {
             status: "success",
-            message: "Find successfully",
+            message: "Tìm kiếm thành công",
             images,
           },
         });
@@ -296,7 +297,7 @@ class HomeController {
         res.status(200).json({
           data: {
             status: "success",
-            message: "Not found",
+            message: "Không tìm thấy",
             images: [],
           },
         });
@@ -310,6 +311,35 @@ class HomeController {
         },
       });
     }
+  };
+
+  getAmountHomeByCategory = async (req: Request, res: Response) => {
+    let categories = await this.homeRepository.query(
+      "select categories.id, categories.image, count(categories.id) as amount, categories.name from homes inner join categories on homes.category_id = categories.id group by categories.id;"
+    );
+    res.status(200).json({
+      data: {
+        status: "success",
+        message: "Lấy dữ liệu thành công",
+        categories,
+      },
+    });
+  };
+
+  findHomeByQuery = async (req: Request, res: Response) => {
+    let { categories, name, min, max } = req.query;
+    let homes = await this.homeRepository.query(
+      `select homes.*, COALESCE(sum(reviews.overall_rating), 0) as rate_star, count(reviews.id) as amount_reviews from homes left join reviews on reviews.home_id = homes.id group by homes.id having ${categories ? `category_id in (${categories}) and` : ''}  ${name ? `(homes.title like '%${name}%' or homes.address like '%${name}%') and` : ''} homes.price between ${min} and ${max};`
+    );
+    console.log(1111, homes);
+    
+    res.status(200).json({
+      data: {
+        status: "success",
+        message: "Lấy dữ liệu thành công",
+        homes: homes ? homes : [],
+      },
+    });
   };
 }
 

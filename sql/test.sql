@@ -13,3 +13,12 @@ BEGIN
   END WHILE;
 END $$
 DELIMITER ;
+
+
+select homes.id, homes.title, homes.address, homes.image_main, contracts.id, contracts.checkin, contracts.checkout, contracts.total_money, contracts.status, contracts.status_payment, accounts.username, accounts.email, accounts.phone_number from contracts left join homes on contracts.home_id = homes.id left join accounts on contracts.account_id = accounts.id where contracts.id = 5; 
+select homes.id, homes.title, homes.address, homes.image_main, contracts.id, contracts.checkin, contracts.checkout, contracts.total_money, contracts.status, contracts.status_payment, accounts.username as user_booking from contracts left join homes on contracts.home_id = homes.id left join accounts on contracts.account_id = accounts.id where contracts.account_id = 10 and DATE(contracts.checkout) > DATE(NOW());
+select * from reviews inner join accounts on reviews.account_id = accounts.id; 
+select reviews.*, accounts.username, accounts.avatar from (reviews inner join accounts on reviews.account_id = accounts.id) inner join contracts on contracts.id = reviews.contract_id  where reviews.home_id = 7 and contracts.status_review = 1; 
+select homes.title, homes.address, contracts.checkin, contracts.checkout, contracts.updated_at, contracts.total_money, contracts.status_payment, contracts.status, accounts.username as user_booking from contracts left join homes on contracts.home_id = homes.id left join accounts on contracts.account_id = accounts.id where homes.account_id = '2' and contracts.home_id='5' and contracts.status_payment != '1' and month(contracts.checkin) >= '4' and year(contracts.checkin) >= '2023' and month(contracts.checkout) <= '5' and year(contracts.checkout) <= '2023';
+
+select categories.id, categories.image, count(categories.id) as amount, categories.name from homes inner join categories on homes.category_id = categories.id group by categories.id;
